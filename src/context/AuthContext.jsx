@@ -231,6 +231,50 @@ export function AuthProvider({ children }) {
       const newActivities = [...currentActivities];
       const timestamp = new Date().toISOString();
 
+      // Certificate generation logic on module completion
+      let updatedCertificates = userProfile.certificates || [];
+      if (activityMetadata?.isModuleCompletion) {
+        const moduleName = activityMetadata.module;
+        const exists = updatedCertificates.some(c => c.module === moduleName);
+        if (!exists) {
+          const abbrev = moduleName === 'Phishing Detective' ? 'PD' : 'SF';
+          const year = new Date().getFullYear();
+          const rand = Math.floor(1000 + Math.random() * 9000);
+          const certId = `CQ-${abbrev}-${year}-${rand}`;
+          
+          const certificateIssued = {
+            id: certId,
+            module: moduleName,
+            score: activityMetadata.score || 0,
+            issuedAt: timestamp
+          };
+          
+          updatedCertificates = [...updatedCertificates, certificateIssued];
+
+          // Log Certificate Earned timeline event
+          newActivities.unshift({
+            id: `cert-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            type: 'certificate_earned',
+            title: 'Certificate Earned',
+            description: `Earned Certificate of Completion for ${moduleName} (Verification ID: ${certId})`,
+            timestamp
+          });
+
+          // Check if first certificate to unlock CertifiedLearner badge
+          if (!updatedBadges.includes('CertifiedLearner')) {
+            updatedBadges.push('CertifiedLearner');
+            // Log badge unlocked event
+            newActivities.unshift({
+              id: `badge-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+              type: 'badge_unlock',
+              title: 'Badge Unlocked',
+              description: `Unlocked "Certified Learner" badge`,
+              timestamp
+            });
+          }
+        }
+      }
+
       // 1. XP Earned event
       if (xpEarned > 0) {
         newActivities.unshift({
@@ -251,7 +295,8 @@ export function AuthProvider({ children }) {
           'PerfectAnalyst': 'Perfect Analyst',
           'FundamentalsGraduate': 'Fundamentals Graduate',
           'SecurityGuardian': 'Security Guardian',
-          'AIExplorer': 'AI Explorer'
+          'AIExplorer': 'AI Explorer',
+          'CertifiedLearner': 'Certified Learner'
         };
         const title = badgeTitles[badgeUnlocked] || badgeUnlocked;
         newActivities.unshift({
@@ -293,6 +338,7 @@ export function AuthProvider({ children }) {
         level: newLevel,
         xpNeeded,
         badges: updatedBadges,
+        certificates: updatedCertificates,
         activities: trimmedActivities
       };
 

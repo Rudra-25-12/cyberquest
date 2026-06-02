@@ -1,6 +1,8 @@
-import { useState } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from 'react';
 import { fundamentalsScenarios } from '../data/fundamentalsScenarios';
 import { useAuth } from '../context/AuthContext';
+import { getStorageKey } from '../utils/storage';
 import { 
   Shield, 
   CheckCircle2, 
@@ -19,12 +21,13 @@ import {
  * @param {function(string, string):void} props.onShowToast - Notification callback
  */
 export default function SecurityFundamentalsPage({ onShowToast }) {
-  const { updateProgression } = useAuth();
+  const { user, updateProgression } = useAuth();
   const scenarios = fundamentalsScenarios;
   const [selectedId, setSelectedId] = useState(scenarios[0]?.id || null);
   const [answers, setAnswers] = useState(() => {
     try {
-      const saved = localStorage.getItem('cyberquest_fundamentals_answers');
+      const key = getStorageKey('cyberquest_fundamentals_answers', user?.uid);
+      const saved = localStorage.getItem(key);
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -36,6 +39,19 @@ export default function SecurityFundamentalsPage({ onShowToast }) {
   
   // Track mobile view: 'list' or 'reader'
   const [mobileTab, setMobileTab] = useState('list');
+
+  useEffect(() => {
+    try {
+      const key = getStorageKey('cyberquest_fundamentals_answers', user?.uid);
+      const saved = localStorage.getItem(key);
+      setAnswers(saved ? JSON.parse(saved) : {});
+    } catch {
+      setAnswers({});
+    }
+    setSelectedId(scenarios[0]?.id || null);
+    setCurrentSelection(null);
+    setMobileTab('list');
+  }, [user?.uid, scenarios]);
 
   const selectedScenario = scenarios.find(s => s.id === selectedId);
 
@@ -59,7 +75,8 @@ export default function SecurityFundamentalsPage({ onShowToast }) {
     setCurrentSelection(null);
 
     try {
-      localStorage.setItem('cyberquest_fundamentals_answers', JSON.stringify(updatedAnswers));
+      const key = getStorageKey('cyberquest_fundamentals_answers', user?.uid);
+      localStorage.setItem(key, JSON.stringify(updatedAnswers));
     } catch (e) {
       console.error(e);
     }
@@ -103,6 +120,7 @@ export default function SecurityFundamentalsPage({ onShowToast }) {
               const compRes = await updateProgression(completionXP, completionBadge, {
                 module: 'Security Fundamentals',
                 isModuleCompletion: true,
+                score: correctCount,
                 accuracy: `${Math.round((correctCount / totalScenarios) * 100)}%`
               });
               if (compRes) {
@@ -149,7 +167,8 @@ export default function SecurityFundamentalsPage({ onShowToast }) {
       setSelectedId(scenarios[0]?.id || null);
       setMobileTab('list');
       try {
-        localStorage.removeItem('cyberquest_fundamentals_answers');
+        const key = getStorageKey('cyberquest_fundamentals_answers', user?.uid);
+        localStorage.removeItem(key);
       } catch (e) {
         console.error(e);
       }

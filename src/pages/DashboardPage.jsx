@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useAuth, calculateLevelProgress } from '../context/AuthContext';
 import { Award, BookOpen, Lock, ShieldCheck, Zap, Key, Eye, Sparkles, Trophy, Percent, CheckSquare, ArrowRight, Clock } from 'lucide-react';
+import { getStorageKey } from '../utils/storage';
 
 /**
  * DashboardPage Component.
@@ -8,7 +9,7 @@ import { Award, BookOpen, Lock, ShieldCheck, Zap, Key, Eye, Sparkles, Trophy, Pe
  * @param {function(string):void} props.onNavigate - Page router utility
  */
 export default function DashboardPage({ onNavigate, onShowToast }) {
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const xp = userProfile?.xp || 0;
   const { level, maxXp, percent } = calculateLevelProgress(xp);
 
@@ -17,7 +18,8 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
     let completedPhishing = 0;
     let correctPhishing = 0;
     try {
-      const savedPhishing = localStorage.getItem('cyberquest_phishing_answers');
+      const keyPhishing = getStorageKey('cyberquest_phishing_answers', user?.uid);
+      const savedPhishing = localStorage.getItem(keyPhishing);
       if (savedPhishing) {
         const parsed = JSON.parse(savedPhishing);
         const entries = Object.values(parsed);
@@ -32,7 +34,8 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
     let completedFundamentals = 0;
     let correctFundamentals = 0;
     try {
-      const savedFundamentals = localStorage.getItem('cyberquest_fundamentals_answers');
+      const keyFundamentals = getStorageKey('cyberquest_fundamentals_answers', user?.uid);
+      const savedFundamentals = localStorage.getItem(keyFundamentals);
       if (savedFundamentals) {
         const parsed = JSON.parse(savedFundamentals);
         const entries = Object.values(parsed);
@@ -47,7 +50,8 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
     let completedAi = 0;
     let correctAi = 0;
     try {
-      const savedAi = localStorage.getItem('cyberquest_ai_answers');
+      const keyAi = getStorageKey('cyberquest_ai_answers', user?.uid);
+      const savedAi = localStorage.getItem(keyAi);
       if (savedAi) {
         const parsed = JSON.parse(savedAi);
         const entries = Object.values(parsed);
@@ -66,7 +70,7 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       completedAi,
       correctAi,
     };
-  }, []);
+  }, [user?.uid]);
 
   const totalCompleted = stats.completedPhishing + stats.completedFundamentals + stats.completedAi;
   const totalCorrect = stats.correctPhishing + stats.correctFundamentals + stats.correctAi;
@@ -417,6 +421,7 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
                     if (activity.type === 'badge_unlock') dotColor = 'bg-[#A855F7]';
                     else if (activity.type === 'level_up') dotColor = 'bg-[#F59E0B]';
                     else if (activity.type === 'module_completion') dotColor = 'bg-[#22C55E]';
+                    else if (activity.type === 'certificate_earned') dotColor = 'bg-[#3B82F6]';
 
                     return (
                       <div key={activity.id} className="relative flex flex-col gap-1">

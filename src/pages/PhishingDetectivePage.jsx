@@ -1,6 +1,8 @@
-import { useState } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from 'react';
 import { mockScenarios } from '../data/mockScenarios';
 import { useAuth } from '../context/AuthContext';
+import { getStorageKey } from '../utils/storage';
 import { 
   Shield, 
   AlertTriangle, 
@@ -25,13 +27,13 @@ import {
  * @param {function(string, string):void} props.onShowToast - Notification callback
  */
 export default function PhishingDetectivePage({ onShowToast }) {
-  const { updateProgression } = useAuth();
+  const { user, updateProgression } = useAuth();
   const scenarios = mockScenarios;
   const [selectedId, setSelectedId] = useState(scenarios[0]?.id || null);
   const [answers, setAnswers] = useState(() => {
-    // Initialise from localStorage if exists
     try {
-      const saved = localStorage.getItem('cyberquest_phishing_answers');
+      const key = getStorageKey('cyberquest_phishing_answers', user?.uid);
+      const saved = localStorage.getItem(key);
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -51,6 +53,25 @@ export default function PhishingDetectivePage({ onShowToast }) {
     link: false
   });
   const [inspectedClues, setInspectedClues] = useState([]);
+
+  useEffect(() => {
+    try {
+      const key = getStorageKey('cyberquest_phishing_answers', user?.uid);
+      const saved = localStorage.getItem(key);
+      setAnswers(saved ? JSON.parse(saved) : {});
+    } catch {
+      setAnswers({});
+    }
+    setSelectedId(scenarios[0]?.id || null);
+    setCurrentSelection(null);
+    setMobileTab('list');
+    setRevealedTools({
+      sender: false,
+      domain: false,
+      link: false
+    });
+    setInspectedClues([]);
+  }, [user?.uid, scenarios]);
 
   const toggleTool = (toolKey) => {
     setRevealedTools(prev => {
@@ -85,7 +106,8 @@ export default function PhishingDetectivePage({ onShowToast }) {
     setCurrentSelection(null);
     
     try {
-      localStorage.setItem('cyberquest_phishing_answers', JSON.stringify(updatedAnswers));
+      const key = getStorageKey('cyberquest_phishing_answers', user?.uid);
+      localStorage.setItem(key, JSON.stringify(updatedAnswers));
     } catch (e) {
       console.error(e);
     }
@@ -129,6 +151,7 @@ export default function PhishingDetectivePage({ onShowToast }) {
               const compRes = await updateProgression(completionXP, completionBadge, {
                 module: 'Phishing Detective',
                 isModuleCompletion: true,
+                score: correctCount,
                 accuracy: `${Math.round((correctCount / totalScenarios) * 100)}%`
               });
               if (compRes) {
@@ -181,7 +204,8 @@ export default function PhishingDetectivePage({ onShowToast }) {
       setInspectedClues([]);
       setMobileTab('list');
       try {
-        localStorage.removeItem('cyberquest_phishing_answers');
+        const key = getStorageKey('cyberquest_phishing_answers', user?.uid);
+        localStorage.removeItem(key);
       } catch (e) {
         console.error(e);
       }

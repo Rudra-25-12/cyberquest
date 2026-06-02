@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import { generateChallenge } from '../services/geminiService';
 import { useAuth } from '../context/AuthContext';
 import { mockScenarios } from '../data/mockScenarios';
+import { getStorageKey } from '../utils/storage';
 import { fundamentalsScenarios } from '../data/fundamentalsScenarios';
 import { 
   Sparkles, 
@@ -23,7 +25,7 @@ import {
  * @param {function(string, string):void} props.onShowToast - Notification callback
  */
 export default function AiChallengeLabPage({ onShowToast }) {
-  const { userProfile, updateProgression } = useAuth();
+  const { user, userProfile, updateProgression } = useAuth();
   const [selectedTopic, setSelectedTopic] = useState('Phishing');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Medium');
   
@@ -48,12 +50,27 @@ export default function AiChallengeLabPage({ onShowToast }) {
   // 2. Local History state (last 5 challenges generated)
   const [history, setHistory] = useState(() => {
     try {
-      const saved = localStorage.getItem('cyberquest_ai_history');
+      const key = getStorageKey('cyberquest_ai_history', user?.uid);
+      const saved = localStorage.getItem(key);
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
   });
+
+  useEffect(() => {
+    try {
+      const key = getStorageKey('cyberquest_ai_history', user?.uid);
+      const saved = localStorage.getItem(key);
+      setHistory(saved ? JSON.parse(saved) : []);
+    } catch {
+      setHistory([]);
+    }
+    setChallenge(null);
+    setChosenChoice(null);
+    setSubmitted(false);
+    setError(null);
+  }, [user?.uid]);
 
   const saveChallengeToHistory = (newChallenge) => {
     // Avoid duplicate history records (matching title and scenario)
@@ -63,7 +80,8 @@ export default function AiChallengeLabPage({ onShowToast }) {
     const updatedHistory = [newChallenge, ...history].slice(0, 5);
     setHistory(updatedHistory);
     try {
-      localStorage.setItem('cyberquest_ai_history', JSON.stringify(updatedHistory));
+      const key = getStorageKey('cyberquest_ai_history', user?.uid);
+      localStorage.setItem(key, JSON.stringify(updatedHistory));
     } catch (e) {
       console.error(e);
     }
@@ -173,13 +191,14 @@ export default function AiChallengeLabPage({ onShowToast }) {
 
     // Save submission to cyberquest_ai_answers in localStorage for analytics completion & accuracy tracking
     try {
-      const savedAnswers = JSON.parse(localStorage.getItem('cyberquest_ai_answers') || '{}');
+      const key = getStorageKey('cyberquest_ai_answers', user?.uid);
+      const savedAnswers = JSON.parse(localStorage.getItem(key) || '{}');
       savedAnswers[challenge.title] = {
         isCorrect: userCorrect,
         submitted: true,
         timestamp: new Date().toISOString()
       };
-      localStorage.setItem('cyberquest_ai_answers', JSON.stringify(savedAnswers));
+      localStorage.setItem(key, JSON.stringify(savedAnswers));
     } catch (e) {
       console.error("Failed to save AI challenge to localStorage:", e);
     }

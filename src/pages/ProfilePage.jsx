@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth, calculateLevelProgress } from '../context/AuthContext';
-import { Award, Mail, Calendar, User, Save, ShieldAlert, BadgeCheck } from 'lucide-react';
+import { Award, Mail, Calendar, User, Save, ShieldAlert, BadgeCheck, FileText, Download, Eye, X } from 'lucide-react';
 
 /**
  * ProfilePage Component.
@@ -12,6 +12,91 @@ export default function ProfilePage({ onShowToast }) {
   const [displayName, setDisplayName] = useState(userProfile?.displayName || '');
   const [bio, setBio] = useState(userProfile?.bio || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeCert, setActiveCert] = useState(null);
+
+  const handleDownloadPNG = (cert) => {
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = 1600; // high res width
+    canvas.height = 1200; // high res height
+    const ctx = canvas.getContext('2d');
+
+    // Fill background: dark slate (#0F1115)
+    ctx.fillStyle = '#0F1115';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw inner card: #171A21
+    ctx.fillStyle = '#171A21';
+    ctx.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
+
+    // Draw border: #1F242F
+    ctx.strokeStyle = '#1F242F';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
+
+    // Draw frame: #3B82F6
+    ctx.strokeStyle = '#3B82F6';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(80, 80, canvas.width - 160, canvas.height - 160);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // 1. Logo
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillText('CYBERQUEST', canvas.width / 2, 180);
+
+    // 2. Main title
+    ctx.fillStyle = '#F3F4F6';
+    ctx.font = 'bold 64px sans-serif';
+    ctx.fillText('CERTIFICATE OF COMPLETION', canvas.width / 2, 280);
+
+    // 3. Awarded to text
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText('This certificate is proudly awarded to', canvas.width / 2, 420);
+
+    // 4. User name
+    ctx.fillStyle = '#F3F4F6';
+    ctx.font = 'bold 56px sans-serif';
+    ctx.fillText(userProfile?.displayName || user?.displayName || 'Cyber Cadet', canvas.width / 2, 510);
+
+    // 5. For completing text
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText('for successfully completing the learning path', canvas.width / 2, 620);
+
+    // 6. Module Name
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = 'bold 44px sans-serif';
+    ctx.fillText(cert.module, canvas.width / 2, 700);
+
+    // 7. Score
+    ctx.fillStyle = '#22C55E';
+    ctx.font = 'bold 32px monospace';
+    ctx.fillText(`Score: ${cert.score}/10`, canvas.width / 2, 800);
+
+    // 8. Issued Date & ID
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '22px monospace';
+    const dateFormatted = new Date(cert.issuedAt).toLocaleDateString(undefined, { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    ctx.fillText(`Issued: ${dateFormatted}`, canvas.width / 2, 940);
+    ctx.fillText(`Certificate ID: ${cert.id}`, canvas.width / 2, 990);
+
+    // Export as download
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Certificate_${cert.module.replace(/\s+/g, '_')}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   const xp = userProfile?.xp || 0;
   const { level, maxXp, percent } = calculateLevelProgress(xp);
@@ -80,6 +165,12 @@ export default function ProfilePage({ onShowToast }) {
       title: 'AI Explorer',
       desc: 'Generated your first AI challenge using Gemini.',
       earned: userProfile?.badges?.includes('AIExplorer') || false,
+    },
+    {
+      id: 'CertifiedLearner',
+      title: 'Certified Learner',
+      desc: 'Earned your first training completion certificate on CyberQuest.',
+      earned: userProfile?.badges?.includes('CertifiedLearner') || false,
     },
   ];
 
@@ -262,9 +353,163 @@ export default function ProfilePage({ onShowToast }) {
             </div>
           </div>
 
+          {/* Certificates List Section */}
+          <div className="bg-[#171A21] border border-[#1F242F] p-6 rounded-lg flex flex-col gap-4">
+            <h3 className="font-bold text-lg text-[#F3F4F6] flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#3B82F6]" /> Earned Certificates
+            </h3>
+            <p className="text-xs text-[#9CA3AF] -mt-1 leading-relaxed">
+              Verify your defensive security certifications and export them as high-resolution credentials.
+            </p>
+
+            {userProfile?.certificates && userProfile.certificates.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                {userProfile.certificates.map((cert) => (
+                  <div
+                    key={cert.id}
+                    className="bg-[#171A21] border border-[#1F242F] p-5 rounded-lg flex flex-col justify-between gap-4 shadow-sm"
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className="font-bold text-sm text-[#F3F4F6]">{cert.module}</h4>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E]">
+                          {cert.score} / 10
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#9CA3AF] font-mono mt-1">
+                        Issued: {new Date(cert.issuedAt).toLocaleDateString(undefined, { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </div>
+                      <div className="text-[10px] text-[#9CA3AF] font-mono mt-0.5 border-t border-[#1F242F]/60 pt-2 flex items-baseline gap-1">
+                        <span className="text-[#6B7280]">Verification ID:</span>
+                        <span className="text-[#3B82F6] font-semibold tracking-wider">{cert.id}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <button
+                        onClick={() => setActiveCert(cert)}
+                        className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-md border border-[#1F242F] hover:border-[#3B82F6]/30 bg-[#0F1115] text-[11px] font-semibold text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> View
+                      </button>
+                      <button
+                        onClick={() => handleDownloadPNG(cert)}
+                        className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-md border border-[#1F242F] hover:border-[#3B82F6]/30 bg-[#0F1115] text-[11px] font-semibold text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Download
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center border border-dashed border-[#1F242F] rounded-lg mt-3">
+                <FileText className="w-8 h-8 text-[#1F242F] mb-2" />
+                <p className="text-xs text-[#9CA3AF] px-4 leading-normal">
+                  No certificates issued yet. Complete Phishing Detective or Security Fundamentals to earn your certificate of completion.
+                </p>
+              </div>
+            )}
+          </div>
+
         </div>
 
       </div>
+
+      {/* Certificate Modal */}
+      {activeCert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F1115]/80 p-4 animate-fadeIn">
+          <div className="relative w-full max-w-2xl bg-[#171A21] border border-[#1F242F] rounded-lg p-8 md:p-12 shadow-lg flex flex-col items-center text-center gap-6">
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setActiveCert(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-md border border-[#1F242F] hover:border-[#EF4444]/30 bg-[#0F1115] text-[#9CA3AF] hover:text-[#EF4444] transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Accent border frame line */}
+            <div className="absolute inset-4 border border-[#3B82F6]/30 rounded pointer-events-none"></div>
+
+            {/* Logo */}
+            <div className="text-sm font-extrabold text-[#3B82F6] tracking-widest uppercase">
+              CYBER<span className="text-[#F3F4F6]">QUEST</span>
+            </div>
+
+            {/* Main Header */}
+            <div className="flex flex-col gap-1 mt-2">
+              <h3 className="text-xl md:text-2xl font-black text-[#F3F4F6] tracking-tight">
+                CERTIFICATE OF COMPLETION
+              </h3>
+              <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest font-mono">
+                Defensive Cybersecurity Training
+              </p>
+            </div>
+
+            {/* Awarded To */}
+            <div className="flex flex-col gap-2 mt-4">
+              <span className="text-xs text-[#9CA3AF] italic">
+                This certificate is proudly awarded to
+              </span>
+              <span className="text-2xl font-bold text-[#F3F4F6] border-b border-[#1F242F] pb-2 px-8 min-w-[200px]">
+                {userProfile?.displayName || user?.displayName || 'Cyber Cadet'}
+              </span>
+            </div>
+
+            {/* Module Completed */}
+            <div className="flex flex-col gap-1.5 mt-2">
+              <span className="text-xs text-[#9CA3AF]">
+                for successfully completing the training path
+              </span>
+              <span className="text-lg font-bold text-[#3B82F6]">
+                {activeCert.module}
+              </span>
+            </div>
+
+            {/* Score */}
+            <div className="text-xs font-semibold px-3 py-1 rounded bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E] font-mono mt-1">
+              Score: {activeCert.score} / 10
+            </div>
+
+            {/* Metadata (Date & Prominent Certificate ID) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-t border-[#1F242F] pt-6 mt-4 text-left font-mono text-[11px] text-[#9CA3AF]">
+              <div>
+                <span className="text-[#6B7280] block text-[9px] uppercase tracking-wider">Date Issued</span>
+                <span className="text-[#F3F4F6]">
+                  {new Date(activeCert.issuedAt).toLocaleDateString(undefined, { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </span>
+              </div>
+              <div className="md:text-right">
+                <span className="text-[#6B7280] block text-[9px] uppercase tracking-wider font-mono">Verification Code</span>
+                <span className="text-[#3B82F6] font-bold tracking-wider">
+                  {activeCert.id}
+                </span>
+              </div>
+            </div>
+
+            {/* Download Action */}
+            <div className="flex gap-3 mt-6 w-full justify-center">
+              <button
+                onClick={() => handleDownloadPNG(activeCert)}
+                className="inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer shadow-sm hover:shadow-md"
+              >
+                <Download className="w-4 h-4" /> Download Certificate PNG
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
