@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import PhishingDetectivePage from './pages/PhishingDetectivePage';
 import SecurityFundamentalsPage from './pages/SecurityFundamentalsPage';
+import AiChallengeLabPage from './pages/AiChallengeLabPage';
 import ProfilePage from './pages/ProfilePage';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -75,6 +76,9 @@ function AppContent() {
           )}
           {currentView === 'security-fundamentals' && (
             <SecurityFundamentalsPage onShowToast={showToast} />
+          )}
+          {currentView === 'ai-challenge-lab' && (
+            <AiChallengeLabPage onShowToast={showToast} />
           )}
           {currentView === 'profile' && (
             <ProfilePage onShowToast={showToast} />

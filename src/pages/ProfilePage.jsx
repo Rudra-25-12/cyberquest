@@ -75,6 +75,12 @@ export default function ProfilePage({ onShowToast }) {
       desc: 'Scored a perfect 10/10 in the Security Fundamentals lab.',
       earned: userProfile?.badges?.includes('SecurityGuardian') || false,
     },
+    {
+      id: 'AIExplorer',
+      title: 'AI Explorer',
+      desc: 'Generated your first AI challenge using Gemini.',
+      earned: userProfile?.badges?.includes('AIExplorer') || false,
+    },
   ];
 
   const formatDate = (dateString) => {

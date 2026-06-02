@@ -1,5 +1,5 @@
 import { useAuth, calculateLevelProgress } from '../context/AuthContext';
-import { Award, BookOpen, Lock, ShieldCheck, Zap, Key, Eye } from 'lucide-react';
+import { Award, BookOpen, Lock, ShieldCheck, Zap, Key, Eye, Sparkles } from 'lucide-react';
 
 /**
  * DashboardPage Component.
@@ -32,6 +32,16 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       status: 'available',
       badgeColor: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20',
       icon: <Eye className="w-5 h-5 text-[#3B82F6]" />
+    },
+    {
+      id: 'ai-challenge-lab',
+      title: 'AI Challenge Lab',
+      desc: 'Generate unlimited custom security challenges on demand using Gemini.',
+      xp: '10 XP / lab',
+      challenges: 'Unlimited',
+      status: 'available',
+      badgeColor: 'text-[#F59E0B] bg-[#F59E0B]/10 border-[#F59E0B]/20',
+      icon: <Sparkles className="w-5 h-5 text-[#F59E0B]" />
     },
     {
       id: 'owasp',
@@ -175,6 +185,8 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
                           onNavigate('phishing-detective');
                         } else if (track.id === 'fundamentals') {
                           onNavigate('security-fundamentals');
+                        } else if (track.id === 'ai-challenge-lab') {
+                          onNavigate('ai-challenge-lab');
                         } else if (onShowToast) {
                           onShowToast("Lab loading...", "info");
                         }
