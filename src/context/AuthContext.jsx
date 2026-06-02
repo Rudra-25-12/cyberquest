@@ -219,11 +219,16 @@ export function AuthProvider({ children }) {
       
       const currentBadges = userProfile.badges || [];
       let updatedBadges = [...currentBadges];
-      let badgeUnlocked = null;
+      let badgesUnlocked = [];
 
-      if (badgeToUnlock && !currentBadges.includes(badgeToUnlock)) {
-        updatedBadges.push(badgeToUnlock);
-        badgeUnlocked = badgeToUnlock;
+      if (badgeToUnlock) {
+        const badgesArray = Array.isArray(badgeToUnlock) ? badgeToUnlock : [badgeToUnlock];
+        badgesArray.forEach(badge => {
+          if (!updatedBadges.includes(badge)) {
+            updatedBadges.push(badge);
+            badgesUnlocked.push(badge);
+          }
+        });
       }
 
       // Generate activity logs
@@ -233,45 +238,50 @@ export function AuthProvider({ children }) {
 
       // Certificate generation logic on module completion
       let updatedCertificates = userProfile.certificates || [];
-      if (activityMetadata?.isModuleCompletion) {
-        const moduleName = activityMetadata.module;
-        const exists = updatedCertificates.some(c => c.module === moduleName);
-        if (!exists) {
-          const abbrev = moduleName === 'Phishing Detective' ? 'PD' : 'SF';
-          const year = new Date().getFullYear();
-          const rand = Math.floor(1000 + Math.random() * 9000);
-          const certId = `CQ-${abbrev}-${year}-${rand}`;
-          
-          const certificateIssued = {
-            id: certId,
-            module: moduleName,
-            score: activityMetadata.score || 0,
-            issuedAt: timestamp
-          };
-          
-          updatedCertificates = [...updatedCertificates, certificateIssued];
+      const isFirstCompletion = activityMetadata?.isModuleCompletion 
+        ? !updatedCertificates.some(c => c.module === activityMetadata.module)
+        : false;
 
-          // Log Certificate Earned timeline event
+      if (activityMetadata?.isModuleCompletion && isFirstCompletion) {
+        const moduleName = activityMetadata.module;
+        let abbrev = 'SF';
+        if (moduleName === 'Phishing Detective') abbrev = 'PD';
+        else if (moduleName === 'OWASP Top 10 Defenses') abbrev = 'OW';
+        
+        const year = new Date().getFullYear();
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        const certId = `CQ-${abbrev}-${year}-${rand}`;
+        
+        const certificateIssued = {
+          id: certId,
+          module: moduleName,
+          score: activityMetadata.score || 0,
+          issuedAt: timestamp
+        };
+        
+        updatedCertificates = [...updatedCertificates, certificateIssued];
+
+        // Log Certificate Earned timeline event
+        newActivities.unshift({
+          id: `cert-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          type: 'certificate_earned',
+          title: 'Certificate Earned',
+          description: `Earned Certificate of Completion for ${moduleName} (Verification ID: ${certId})`,
+          timestamp
+        });
+
+        // Check if first certificate to unlock CertifiedLearner badge
+        if (!updatedBadges.includes('CertifiedLearner')) {
+          updatedBadges.push('CertifiedLearner');
+          badgesUnlocked.push('CertifiedLearner');
+          // Log badge unlocked event
           newActivities.unshift({
-            id: `cert-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            type: 'certificate_earned',
-            title: 'Certificate Earned',
-            description: `Earned Certificate of Completion for ${moduleName} (Verification ID: ${certId})`,
+            id: `badge-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            type: 'badge_unlock',
+            title: 'Badge Unlocked',
+            description: `Unlocked "Certified Learner" badge`,
             timestamp
           });
-
-          // Check if first certificate to unlock CertifiedLearner badge
-          if (!updatedBadges.includes('CertifiedLearner')) {
-            updatedBadges.push('CertifiedLearner');
-            // Log badge unlocked event
-            newActivities.unshift({
-              id: `badge-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-              type: 'badge_unlock',
-              title: 'Badge Unlocked',
-              description: `Unlocked "Certified Learner" badge`,
-              timestamp
-            });
-          }
         }
       }
 
@@ -287,7 +297,7 @@ export function AuthProvider({ children }) {
       }
 
       // 2. Badge Unlock event
-      if (badgeUnlocked) {
+      if (badgesUnlocked.length > 0) {
         const badgeTitles = {
           'Initiate': 'Initiate Cadet',
           'FirstInvestigation': 'First Investigation',
@@ -296,15 +306,24 @@ export function AuthProvider({ children }) {
           'FundamentalsGraduate': 'Fundamentals Graduate',
           'SecurityGuardian': 'Security Guardian',
           'AIExplorer': 'AI Explorer',
-          'CertifiedLearner': 'Certified Learner'
+          'CertifiedLearner': 'Certified Learner',
+          'OWASPExplorer': 'OWASP Explorer',
+          'ThreatHunter': 'Threat Hunter',
+          'ApplicationGuardian': 'Application Guardian'
         };
-        const title = badgeTitles[badgeUnlocked] || badgeUnlocked;
-        newActivities.unshift({
-          id: `badge-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-          type: 'badge_unlock',
-          title: 'Badge Unlocked',
-          description: `Unlocked "${title}" badge`,
-          timestamp
+        badgesUnlocked.forEach(badge => {
+          // If CertifiedLearner was logged inside the certificate block above, skip logging it again here
+          if (badge === 'CertifiedLearner' && newActivities.some(a => a.description?.includes('"Certified Learner"'))) {
+            return;
+          }
+          const title = badgeTitles[badge] || badge;
+          newActivities.unshift({
+            id: `badge-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            type: 'badge_unlock',
+            title: 'Badge Unlocked',
+            description: `Unlocked "${title}" badge`,
+            timestamp
+          });
         });
       }
 
@@ -319,8 +338,8 @@ export function AuthProvider({ children }) {
         });
       }
 
-      // 4. Module Completion event
-      if (activityMetadata?.isModuleCompletion) {
+      // 4. Module Completion event (log only on first completion to avoid duplicates)
+      if (activityMetadata?.isModuleCompletion && isFirstCompletion) {
         newActivities.unshift({
           id: `mod-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
           type: 'module_completion',
@@ -350,7 +369,8 @@ export function AuthProvider({ children }) {
         xpEarned,
         levelUp: newLevel > currentLevel,
         newLevel,
-        badgeUnlocked
+        badgeUnlocked: badgesUnlocked[0] || null,
+        badgesUnlocked
       };
     } catch (err) {
       console.error("Failed to update progression:", err);

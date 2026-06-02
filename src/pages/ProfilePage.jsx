@@ -172,6 +172,24 @@ export default function ProfilePage({ onShowToast }) {
       desc: 'Earned your first training completion certificate on CyberQuest.',
       earned: userProfile?.badges?.includes('CertifiedLearner') || false,
     },
+    {
+      id: 'OWASPExplorer',
+      title: 'OWASP Explorer',
+      desc: 'Completed the OWASP Top 10 Defenses learning path.',
+      earned: userProfile?.badges?.includes('OWASPExplorer') || false,
+    },
+    {
+      id: 'ThreatHunter',
+      title: 'Threat Hunter',
+      desc: 'Scored 8/10 or higher in the OWASP Top 10 Defenses lab.',
+      earned: userProfile?.badges?.includes('ThreatHunter') || false,
+    },
+    {
+      id: 'ApplicationGuardian',
+      title: 'Application Guardian',
+      desc: 'Scored a perfect 10/10 in the OWASP Top 10 Defenses lab.',
+      earned: userProfile?.badges?.includes('ApplicationGuardian') || false,
+    },
   ];
 
   const formatDate = (dateString) => {
@@ -410,7 +428,7 @@ export default function ProfilePage({ onShowToast }) {
               <div className="flex flex-col items-center justify-center py-8 text-center border border-dashed border-[#1F242F] rounded-lg mt-3">
                 <FileText className="w-8 h-8 text-[#1F242F] mb-2" />
                 <p className="text-xs text-[#9CA3AF] px-4 leading-normal">
-                  No certificates issued yet. Complete Phishing Detective or Security Fundamentals to earn your certificate of completion.
+                  No certificates issued yet. Complete Phishing Detective, Security Fundamentals, or OWASP Top 10 Defenses to earn your certificate of completion.
                 </p>
               </div>
             )}

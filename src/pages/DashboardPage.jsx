@@ -62,6 +62,22 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       console.error(e);
     }
 
+    // 4. OWASP Top 10 Defenses Answers
+    let completedOwasp = 0;
+    let correctOwasp = 0;
+    try {
+      const keyOwasp = getStorageKey('cyberquest_owasp_answers', user?.uid);
+      const savedOwasp = localStorage.getItem(keyOwasp);
+      if (savedOwasp) {
+        const parsed = JSON.parse(savedOwasp);
+        const entries = Object.values(parsed);
+        completedOwasp = entries.length;
+        correctOwasp = entries.filter((a) => a.isCorrect).length;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     return {
       completedPhishing,
       correctPhishing,
@@ -69,11 +85,13 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       correctFundamentals,
       completedAi,
       correctAi,
+      completedOwasp,
+      correctOwasp,
     };
   }, [user?.uid]);
 
-  const totalCompleted = stats.completedPhishing + stats.completedFundamentals + stats.completedAi;
-  const totalCorrect = stats.correctPhishing + stats.correctFundamentals + stats.correctAi;
+  const totalCompleted = stats.completedPhishing + stats.completedFundamentals + stats.completedAi + stats.completedOwasp;
+  const totalCorrect = stats.correctPhishing + stats.correctFundamentals + stats.correctAi + stats.correctOwasp;
   const accuracyPercent = totalCompleted > 0 ? Math.round((totalCorrect / totalCompleted) * 100) : 0;
   const totalXp = userProfile?.xp || 0;
   const totalBadges = userProfile?.badges?.length || 0;
@@ -81,7 +99,8 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
   const completedModulesCount = 
     (stats.completedPhishing === 10 ? 1 : 0) + 
     (stats.completedFundamentals === 10 ? 1 : 0) + 
-    (stats.completedAi >= 5 ? 1 : 0);
+    (stats.completedAi >= 5 ? 1 : 0) +
+    (stats.completedOwasp === 10 ? 1 : 0);
 
   // Time formatter helper (pure to avoid react-hooks/purity errors)
   const formatActivityTime = (isoString) => {
@@ -136,10 +155,10 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       title: 'OWASP Top 10 Defenses',
       desc: 'Investigate injection flaws, XSS exploits, and broken authentication scenarios.',
       xp: 500,
-      challenges: 12,
-      status: 'coming_soon',
-      badgeColor: 'text-[#9CA3AF] bg-[#171A21] border-[#1F242F]',
-      icon: <Key className="w-5 h-5 text-[#9CA3AF]" />
+      challenges: 10,
+      status: 'available',
+      badgeColor: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20',
+      icon: <Key className="w-5 h-5 text-[#3B82F6]" />
     }
   ];
 
@@ -171,13 +190,22 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
         actionText: "Start Training",
         disabled: false
       };
-    } else {
+    } else if (stats.completedOwasp < 10) {
       return {
         title: "OWASP Top 10 Defenses",
         desc: "Master defenses against modern web vulnerabilities like SQL Injection, XSS, and broken access controls.",
-        icon: <Key className="w-5 h-5 text-[#9CA3AF]" />,
+        icon: <Key className="w-5 h-5 text-[#3B82F6]" />,
         path: "owasp",
-        actionText: "Coming Soon",
+        actionText: "Start Training",
+        disabled: false
+      };
+    } else {
+      return {
+        title: "All Modules Completed",
+        desc: "Congratulations! You have completed all active learning modules on CyberQuest.",
+        icon: <Trophy className="w-5 h-5 text-[#22C55E]" />,
+        path: "dashboard",
+        actionText: "Training Complete",
         disabled: true
       };
     }
@@ -372,6 +400,20 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
                   ></div>
                 </div>
               </div>
+
+              {/* OWASP Top 10 Defenses */}
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between text-xs">
+                  <span className="font-semibold text-[#F3F4F6]">OWASP Top 10 Defenses</span>
+                  <span className="text-[#9CA3AF] font-mono">{stats.completedOwasp} / 10 Completed</span>
+                </div>
+                <div className="w-full bg-[#0F1115] h-2 rounded-full overflow-hidden border border-[#1F242F]">
+                  <div 
+                    className="bg-[#3B82F6] h-full rounded-full transition-all duration-500" 
+                    style={{ width: `${(stats.completedOwasp / 10) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -510,12 +552,15 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
                   {isAvailable ? (
                     <button
                       onClick={() => {
+                        console.log("[DashboardPage] Start Path clicked for track:", track.id);
                         if (track.id === 'phishing') {
                           onNavigate('phishing-detective');
                         } else if (track.id === 'fundamentals') {
                           onNavigate('security-fundamentals');
                         } else if (track.id === 'ai-challenge-lab') {
                           onNavigate('ai-challenge-lab');
+                        } else if (track.id === 'owasp') {
+                          onNavigate('owasp');
                         } else if (onShowToast) {
                           onShowToast("Lab loading...", "info");
                         }

@@ -30,10 +30,10 @@ export async function generateChallenge(topic, difficulty) {
     throw new Error("Gemini API key is not configured. Please define VITE_GEMINI_API_KEY in your .env file.");
   }
 
-  // Model availability check
+  // Model availability check (preflight warning-only log to avoid blocking valid API keys)
   const isAvailable = await checkModelAvailability(apiKey, MODEL_NAME);
   if (!isAvailable) {
-    throw new Error(`The model '${MODEL_NAME}' is not available or supported by your Gemini API key credentials in this region. Please try another model.`);
+    console.warn(`[GeminiService] Preflight check: Model '${MODEL_NAME}' was not returned in the list of models for this API key. Attempting generation regardless...`);
   }
 
   const prompt = `Generate a cybersecurity challenge under the topic: "${topic}" and difficulty level: "${difficulty}".`;

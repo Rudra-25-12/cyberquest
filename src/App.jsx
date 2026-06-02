@@ -1,18 +1,48 @@
-import { useState } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import PhishingDetectivePage from './pages/PhishingDetectivePage';
-import SecurityFundamentalsPage from './pages/SecurityFundamentalsPage';
-import AiChallengeLabPage from './pages/AiChallengeLabPage';
-import ProfilePage from './pages/ProfilePage';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
 import { Shield } from 'lucide-react';
 
+const PhishingDetectivePage = lazy(() => import('./pages/PhishingDetectivePage'));
+const SecurityFundamentalsPage = lazy(() => import('./pages/SecurityFundamentalsPage'));
+const AiChallengeLabPage = lazy(() => import('./pages/AiChallengeLabPage'));
+const OwaspPage = lazy(() => import('./pages/OwaspPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+
+function ModuleLoader() {
+  return (
+    <div className="flex flex-col justify-center items-center py-24 gap-4">
+      <div className="flex items-center gap-3">
+        <Shield className="w-8 h-8 text-[#3B82F6] animate-spin" style={{ animationDuration: '3s' }} />
+        <span className="text-xl font-bold tracking-tight">
+          CYBER<span className="text-[#3B82F6]">QUEST</span>
+        </span>
+      </div>
+      <p className="text-xs text-[#9CA3AF] font-mono tracking-widest uppercase animate-pulse">
+        Loading module secure environment...
+      </p>
+    </div>
+  );
+}
+
 function AppContent() {
-  const { user, loading } = useAuth();
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'phishing-detective' | 'profile'
+  const { user, loading, error } = useAuth();
+  const [currentView, setCurrentView] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cyberquest_current_view');
+      const validViews = ['dashboard', 'phishing-detective', 'security-fundamentals', 'ai-challenge-lab', 'owasp', 'profile'];
+      if (saved && validViews.includes(saved)) {
+        return saved;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return 'dashboard';
+  });
   const [toast, setToast] = useState(null);
 
   // Helper to trigger floating toast alerts
@@ -21,8 +51,35 @@ function AppContent() {
   };
 
   const handleNavigate = (view) => {
+    console.log("[App] currentView before transition:", currentView);
+    console.log("[App] Navigating to view:", view);
     setCurrentView(view);
+    console.log("[App] currentView after transition scheduled:", view);
+    try {
+      localStorage.setItem('cyberquest_current_view', view);
+    } catch (e) {
+      console.error(e);
+    }
   };
+
+  // Trigger toast alert if auth/sync errors occur
+  useEffect(() => {
+    if (error) {
+      showToast(error, 'error');
+    }
+  }, [error]);
+
+  // Reset to dashboard if user logs out
+  useEffect(() => {
+    if (!user) {
+      setCurrentView('dashboard');
+      try {
+        localStorage.setItem('cyberquest_current_view', 'dashboard');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [user]);
 
   // 1. Loading State Screen
   if (loading) {
@@ -68,21 +125,26 @@ function AppContent() {
         />
         
         <main className="pb-12">
-          {currentView === 'dashboard' && (
-            <DashboardPage onNavigate={handleNavigate} onShowToast={showToast} />
-          )}
-          {currentView === 'phishing-detective' && (
-            <PhishingDetectivePage onShowToast={showToast} />
-          )}
-          {currentView === 'security-fundamentals' && (
-            <SecurityFundamentalsPage onShowToast={showToast} />
-          )}
-          {currentView === 'ai-challenge-lab' && (
-            <AiChallengeLabPage onShowToast={showToast} />
-          )}
-          {currentView === 'profile' && (
-            <ProfilePage onShowToast={showToast} />
-          )}
+          <Suspense fallback={<ModuleLoader />}>
+            {currentView === 'dashboard' && (
+              <DashboardPage onNavigate={handleNavigate} onShowToast={showToast} />
+            )}
+            {currentView === 'phishing-detective' && (
+              <PhishingDetectivePage onShowToast={showToast} />
+            )}
+            {currentView === 'security-fundamentals' && (
+              <SecurityFundamentalsPage onShowToast={showToast} />
+            )}
+            {currentView === 'ai-challenge-lab' && (
+              <AiChallengeLabPage onShowToast={showToast} />
+            )}
+            {currentView === 'owasp' && (
+              <OwaspPage onShowToast={showToast} />
+            )}
+            {currentView === 'profile' && (
+              <ProfilePage onShowToast={showToast} />
+            )}
+          </Suspense>
         </main>
       </div>
 
