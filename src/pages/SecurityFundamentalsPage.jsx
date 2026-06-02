@@ -77,7 +77,7 @@ export default function SecurityFundamentalsPage({ onShowToast }) {
       const badgeToUnlock = isFirstChallenge ? 'FirstInvestigation' : null;
 
       // Submit scenario score
-      const res = await updateProgression(xpEarned, badgeToUnlock);
+      const res = await updateProgression(xpEarned, badgeToUnlock, { module: 'Security Fundamentals', detail: selectedScenario.topic });
       if (res) {
         handleProgressionToasts(res);
       }
@@ -100,7 +100,11 @@ export default function SecurityFundamentalsPage({ onShowToast }) {
         if (completionXP > 0 || completionBadge) {
           setTimeout(async () => {
             try {
-              const compRes = await updateProgression(completionXP, completionBadge);
+              const compRes = await updateProgression(completionXP, completionBadge, {
+                module: 'Security Fundamentals',
+                isModuleCompletion: true,
+                accuracy: `${Math.round((correctCount / totalScenarios) * 100)}%`
+              });
               if (compRes) {
                 handleProgressionToasts(compRes);
               }

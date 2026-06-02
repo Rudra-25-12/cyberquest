@@ -207,7 +207,7 @@ export function AuthProvider({ children }) {
   };
 
   // Batch update of XP and badges
-  const updateProgression = async (xpEarned, badgeToUnlock = null) => {
+  const updateProgression = async (xpEarned, badgeToUnlock = null, activityMetadata = null) => {
     if (!user || !userProfile) return null;
 
     try {
@@ -226,11 +226,74 @@ export function AuthProvider({ children }) {
         badgeUnlocked = badgeToUnlock;
       }
 
+      // Generate activity logs
+      const currentActivities = userProfile.activities || [];
+      const newActivities = [...currentActivities];
+      const timestamp = new Date().toISOString();
+
+      // 1. XP Earned event
+      if (xpEarned > 0) {
+        newActivities.unshift({
+          id: `xp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          type: 'xp_earned',
+          title: 'XP Earned',
+          description: `+${xpEarned} XP in ${activityMetadata?.module || 'Training'}${activityMetadata?.detail ? ` (${activityMetadata.detail})` : ''}`,
+          timestamp
+        });
+      }
+
+      // 2. Badge Unlock event
+      if (badgeUnlocked) {
+        const badgeTitles = {
+          'Initiate': 'Initiate Cadet',
+          'FirstInvestigation': 'First Investigation',
+          'PhishingInvestigator': 'Phishing Investigator',
+          'PerfectAnalyst': 'Perfect Analyst',
+          'FundamentalsGraduate': 'Fundamentals Graduate',
+          'SecurityGuardian': 'Security Guardian',
+          'AIExplorer': 'AI Explorer'
+        };
+        const title = badgeTitles[badgeUnlocked] || badgeUnlocked;
+        newActivities.unshift({
+          id: `badge-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          type: 'badge_unlock',
+          title: 'Badge Unlocked',
+          description: `Unlocked "${title}" badge`,
+          timestamp
+        });
+      }
+
+      // 3. Level Up event
+      if (newLevel > currentLevel) {
+        newActivities.unshift({
+          id: `lvl-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          type: 'level_up',
+          title: 'Level Up',
+          description: `Promoted to Level ${newLevel}!`,
+          timestamp
+        });
+      }
+
+      // 4. Module Completion event
+      if (activityMetadata?.isModuleCompletion) {
+        newActivities.unshift({
+          id: `mod-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          type: 'module_completion',
+          title: 'Module Completed',
+          description: `Completed ${activityMetadata.module} with ${activityMetadata.accuracy || '100%'} accuracy`,
+          timestamp
+        });
+      }
+
+      // Cap at 20 activities
+      const trimmedActivities = newActivities.slice(0, 20);
+
       const updates = {
         xp: newXP,
         level: newLevel,
         xpNeeded,
-        badges: updatedBadges
+        badges: updatedBadges,
+        activities: trimmedActivities
       };
 
       const newProfile = await userService.updateProfile(user.uid, updates);

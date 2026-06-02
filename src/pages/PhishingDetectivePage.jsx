@@ -103,7 +103,7 @@ export default function PhishingDetectivePage({ onShowToast }) {
       const badgeToUnlock = isFirstChallenge ? 'FirstInvestigation' : null;
 
       // 1. Submit single challenge score
-      const res = await updateProgression(xpEarned, badgeToUnlock);
+      const res = await updateProgression(xpEarned, badgeToUnlock, { module: 'Phishing Detective', detail: selectedScenario.senderName });
       if (res) {
         handleProgressionToasts(res);
       }
@@ -126,7 +126,11 @@ export default function PhishingDetectivePage({ onShowToast }) {
         if (completionXP > 0 || completionBadge) {
           setTimeout(async () => {
             try {
-              const compRes = await updateProgression(completionXP, completionBadge);
+              const compRes = await updateProgression(completionXP, completionBadge, {
+                module: 'Phishing Detective',
+                isModuleCompletion: true,
+                accuracy: `${Math.round((correctCount / totalScenarios) * 100)}%`
+              });
               if (compRes) {
                 handleProgressionToasts(compRes);
               }
