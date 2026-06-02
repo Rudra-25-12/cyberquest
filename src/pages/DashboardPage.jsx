@@ -17,11 +17,11 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       id: 'fundamentals',
       title: 'Security Fundamentals',
       desc: 'Master basic network security, threat modeling, and defensive system principles.',
-      xp: 200,
-      challenges: 5,
-      status: 'in_development',
-      badgeColor: 'text-[#9CA3AF] bg-[#171A21] border-[#1F242F]',
-      icon: <ShieldCheck className="w-5 h-5 text-[#9CA3AF]" />
+      xp: 150,
+      challenges: 10,
+      status: 'available',
+      badgeColor: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20',
+      icon: <ShieldCheck className="w-5 h-5 text-[#3B82F6]" />
     },
     {
       id: 'phishing',
@@ -173,6 +173,8 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
                       onClick={() => {
                         if (track.id === 'phishing') {
                           onNavigate('phishing-detective');
+                        } else if (track.id === 'fundamentals') {
+                          onNavigate('security-fundamentals');
                         } else if (onShowToast) {
                           onShowToast("Lab loading...", "info");
                         }

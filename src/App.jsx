@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import PhishingDetectivePage from './pages/PhishingDetectivePage';
+import SecurityFundamentalsPage from './pages/SecurityFundamentalsPage';
 import ProfilePage from './pages/ProfilePage';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -71,6 +72,9 @@ function AppContent() {
           )}
           {currentView === 'phishing-detective' && (
             <PhishingDetectivePage onShowToast={showToast} />
+          )}
+          {currentView === 'security-fundamentals' && (
+            <SecurityFundamentalsPage onShowToast={showToast} />
           )}
           {currentView === 'profile' && (
             <ProfilePage onShowToast={showToast} />

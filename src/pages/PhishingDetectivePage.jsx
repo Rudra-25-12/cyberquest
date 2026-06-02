@@ -10,7 +10,13 @@ import {
   Mail, 
   RotateCcw, 
   Info,
-  ChevronRight
+  ChevronRight,
+  Eye,
+  User,
+  Globe,
+  Link as LinkIcon,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 /**
@@ -38,6 +44,24 @@ export default function PhishingDetectivePage({ onShowToast }) {
   // Track mobile view: 'list' or 'reader'
   const [mobileTab, setMobileTab] = useState('list');
 
+  // Investigation Mode states
+  const [revealedTools, setRevealedTools] = useState({
+    sender: false,
+    domain: false,
+    link: false
+  });
+  const [inspectedClues, setInspectedClues] = useState([]);
+
+  const toggleTool = (toolKey) => {
+    setRevealedTools(prev => {
+      const isOpening = !prev[toolKey];
+      if (isOpening && !inspectedClues.includes(toolKey) && !answers[selectedId]) {
+        setInspectedClues(curr => [...curr, toolKey]);
+      }
+      return { ...prev, [toolKey]: isOpening };
+    });
+  };
+
   const selectedScenario = scenarios.find(s => s.id === selectedId);
 
   // Submit current answer
@@ -52,7 +76,8 @@ export default function PhishingDetectivePage({ onShowToast }) {
       [selectedScenario.id]: {
         userChoice: currentSelection,
         submitted: true,
-        isCorrect
+        isCorrect,
+        cluesInspectedCount: inspectedClues.length
       }
     };
 
@@ -144,6 +169,12 @@ export default function PhishingDetectivePage({ onShowToast }) {
       setAnswers({});
       setCurrentSelection(null);
       setSelectedId(scenarios[0]?.id || null);
+      setRevealedTools({
+        sender: false,
+        domain: false,
+        link: false
+      });
+      setInspectedClues([]);
       setMobileTab('list');
       try {
         localStorage.removeItem('cyberquest_phishing_answers');
@@ -171,6 +202,12 @@ export default function PhishingDetectivePage({ onShowToast }) {
 
     setSelectedId(scenarios[nextIndex].id);
     setCurrentSelection(null);
+    setRevealedTools({
+      sender: false,
+      domain: false,
+      link: false
+    });
+    setInspectedClues([]);
     setMobileTab('reader');
   };
 
@@ -245,6 +282,12 @@ export default function PhishingDetectivePage({ onShowToast }) {
                     setSelectedId(scenario.id);
                     setMobileTab('reader');
                     setCurrentSelection(null);
+                    setRevealedTools({
+                      sender: false,
+                      domain: false,
+                      link: false
+                    });
+                    setInspectedClues([]);
                   }}
                   className={`w-full text-left p-4 flex flex-col gap-2 hover:bg-[#242936]/40 transition-colors focus:outline-none cursor-pointer ${
                     isSelected ? 'bg-[#0F1115]' : ''
@@ -361,6 +404,174 @@ export default function PhishingDetectivePage({ onShowToast }) {
                 <div className="border border-[#1F242F] bg-[#171A21] rounded-b-lg p-6 font-mono text-xs leading-relaxed whitespace-pre-wrap text-[#F3F4F6] break-words border-t border-[#1F242F]/50">
                   {selectedScenario.body}
                 </div>
+
+                {/* Investigation Tools Panel */}
+                {selectedScenario.investigation && (
+                  <div className="mt-6 bg-[#171A21] border border-[#1F242F] rounded-lg p-5 flex flex-col gap-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-xs font-semibold text-[#F3F4F6] uppercase tracking-wider flex items-center gap-1.5">
+                        <Eye className="w-4 h-4 text-[#3B82F6]" /> Investigation Tools
+                      </h4>
+                      {!currentAnswer && inspectedClues.length > 0 && (
+                        <span className="text-[10px] bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/20 px-2 py-0.5 rounded-full font-mono font-semibold">
+                          {inspectedClues.length} / 3 Clues Inspected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#9CA3AF] -mt-1 leading-snug">
+                      Analyze the message details below to discover potential warning signs or verify safety.
+                    </p>
+
+                    <div className="flex flex-col gap-3">
+                      {/* Tool 1: Inspect Sender */}
+                      <div className="border border-[#1F242F] rounded-md overflow-hidden bg-[#0F1115]">
+                        <button
+                          type="button"
+                          onClick={() => toggleTool('sender')}
+                          className="w-full flex items-center justify-between p-3 text-xs font-semibold text-[#F3F4F6] hover:bg-[#242936]/40 transition-colors focus:outline-none cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-[#3B82F6]" />
+                            <span>Inspect Sender Address</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {inspectedClues.includes('sender') && (
+                              <span className="text-[9px] font-mono bg-[#3B82F6]/10 text-[#3B82F6] px-1.5 py-0.5 rounded font-medium">Inspected</span>
+                            )}
+                            {revealedTools.sender ? (
+                              <ChevronUp className="w-4 h-4 text-[#9CA3AF]" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
+                            )}
+                          </div>
+                        </button>
+                        
+                        {revealedTools.sender && selectedScenario.investigation.sender && (
+                          <div className="p-4 border-t border-[#1F242F] bg-[#171A21]/40 text-xs flex flex-col gap-3">
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">What You See</span>
+                              <div className="font-sans text-[#F3F4F6] bg-[#0F1115] border border-[#1F242F] px-3 py-2 rounded">
+                                {selectedScenario.investigation.sender.see}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">Actual Underlying Value</span>
+                              <div className="font-mono text-[#3B82F6] bg-[#0F1115] border border-[#1F242F] px-3 py-2 rounded break-all">
+                                {selectedScenario.investigation.sender.value}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">
+                                {selectedScenario.isPhishing ? 'Why it is Suspicious' : 'Why it is Safe'}
+                              </span>
+                              <div className="text-[#9CA3AF] leading-relaxed">
+                                {selectedScenario.investigation.sender.why}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tool 2: Inspect Domain */}
+                      <div className="border border-[#1F242F] rounded-md overflow-hidden bg-[#0F1115]">
+                        <button
+                          type="button"
+                          onClick={() => toggleTool('domain')}
+                          className="w-full flex items-center justify-between p-3 text-xs font-semibold text-[#F3F4F6] hover:bg-[#242936]/40 transition-colors focus:outline-none cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-[#3B82F6]" />
+                            <span>Inspect Domain Security</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {inspectedClues.includes('domain') && (
+                              <span className="text-[9px] font-mono bg-[#3B82F6]/10 text-[#3B82F6] px-1.5 py-0.5 rounded font-medium">Inspected</span>
+                            )}
+                            {revealedTools.domain ? (
+                              <ChevronUp className="w-4 h-4 text-[#9CA3AF]" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
+                            )}
+                          </div>
+                        </button>
+                        
+                        {revealedTools.domain && selectedScenario.investigation.domain && (
+                          <div className="p-4 border-t border-[#1F242F] bg-[#171A21]/40 text-xs flex flex-col gap-3">
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">What You See</span>
+                              <div className="font-sans text-[#F3F4F6] bg-[#0F1115] border border-[#1F242F] px-3 py-2 rounded">
+                                {selectedScenario.investigation.domain.see}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">Actual Underlying Value</span>
+                              <div className="font-mono text-[#3B82F6] bg-[#0F1115] border border-[#1F242F] px-3 py-2 rounded break-all">
+                                {selectedScenario.investigation.domain.value}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">
+                                {selectedScenario.isPhishing ? 'Why it is Suspicious' : 'Why it is Safe'}
+                              </span>
+                              <div className="text-[#9CA3AF] leading-relaxed">
+                                {selectedScenario.investigation.domain.why}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tool 3: Inspect Link */}
+                      <div className="border border-[#1F242F] rounded-md overflow-hidden bg-[#0F1115]">
+                        <button
+                          type="button"
+                          onClick={() => toggleTool('link')}
+                          className="w-full flex items-center justify-between p-3 text-xs font-semibold text-[#F3F4F6] hover:bg-[#242936]/40 transition-colors focus:outline-none cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <LinkIcon className="w-4 h-4 text-[#3B82F6]" />
+                            <span>Inspect Hyperlinks & Redirects</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {inspectedClues.includes('link') && (
+                              <span className="text-[9px] font-mono bg-[#3B82F6]/10 text-[#3B82F6] px-1.5 py-0.5 rounded font-medium">Inspected</span>
+                            )}
+                            {revealedTools.link ? (
+                              <ChevronUp className="w-4 h-4 text-[#9CA3AF]" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
+                            )}
+                          </div>
+                        </button>
+                        
+                        {revealedTools.link && selectedScenario.investigation.link && (
+                          <div className="p-4 border-t border-[#1F242F] bg-[#171A21]/40 text-xs flex flex-col gap-3">
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">What You See</span>
+                              <div className="font-sans text-[#F3F4F6] bg-[#0F1115] border border-[#1F242F] px-3 py-2 rounded">
+                                {selectedScenario.investigation.link.see}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">Actual Underlying Value</span>
+                              <div className="font-mono text-[#3B82F6] bg-[#0F1115] border border-[#1F242F] px-3 py-2 rounded break-all">
+                                {selectedScenario.investigation.link.value}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#9CA3AF] block mb-1">
+                                {selectedScenario.isPhishing ? 'Why it is Suspicious' : 'Why it is Safe'}
+                              </span>
+                              <div className="text-[#9CA3AF] leading-relaxed">
+                                {selectedScenario.investigation.link.why}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Action Form / Feedback Block */}
                 <div className="mt-6">

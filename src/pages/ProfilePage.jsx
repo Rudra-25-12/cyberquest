@@ -63,6 +63,18 @@ export default function ProfilePage({ onShowToast }) {
       desc: 'Scored a perfect 10/10 in the Phishing Detective lab.',
       earned: userProfile?.badges?.includes('PerfectAnalyst') || false,
     },
+    {
+      id: 'FundamentalsGraduate',
+      title: 'Fundamentals Graduate',
+      desc: 'Scored 8/10 or higher in the Security Fundamentals lab.',
+      earned: userProfile?.badges?.includes('FundamentalsGraduate') || false,
+    },
+    {
+      id: 'SecurityGuardian',
+      title: 'Security Guardian',
+      desc: 'Scored a perfect 10/10 in the Security Fundamentals lab.',
+      earned: userProfile?.badges?.includes('SecurityGuardian') || false,
+    },
   ];
 
   const formatDate = (dateString) => {

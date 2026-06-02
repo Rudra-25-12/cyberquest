@@ -34,7 +34,24 @@ Netflix Security Team`,
       { type: "sender", value: "netflix-verification-support.com", label: "Mismatched Domain" },
       { type: "link", value: "netflix-account-restore.net", label: "Suspicious Link Destination" },
       { type: "urgency", value: "within 24 hours / permanently closed", label: "False Sense of Urgency" }
-    ]
+    ],
+    investigation: {
+      sender: {
+        see: "Netflix Security Team",
+        value: "security@netflix-verification-support.com",
+        why: "The display name says 'Netflix Security Team', but the actual email address is 'security@netflix-verification-support.com'. Legitimate security alerts from Netflix will always originate from an official @netflix.com domain."
+      },
+      domain: {
+        see: "netflix-verification-support.com",
+        value: "Third-party lookup domain",
+        why: "This domain is not owned by Netflix. Attackers register lookalike domains to trick readers who only scan the display name."
+      },
+      link: {
+        see: "https://netflix-account-restore.net/login",
+        value: "netflix-account-restore.net (external domain)",
+        why: "The link directs to 'netflix-account-restore.net' instead of the official 'netflix.com'. This is a lookalike setup designed to steal your credentials."
+      }
+    }
   },
   {
     id: "easy-2",
@@ -64,7 +81,24 @@ Microsoft Web Services`,
       { type: "link", value: "outlook-storage-upgrade.weebly.com", label: "Free Hosting Service Link" },
       { type: "salutation", value: "Outlook User", label: "Generic Salutation" },
       { type: "urgency", value: "immediately / no longer send or receive", label: "Fear Tactic" }
-    ]
+    ],
+    investigation: {
+      sender: {
+        see: "Microsoft Outlook Support",
+        value: "outlook-admin-update@microsoft.com",
+        why: "While the sender email address appears spoofed to look like microsoft.com, the actual contents contain external website links."
+      },
+      domain: {
+        see: "microsoft.com",
+        value: "Appears to be microsoft.com, but content is suspicious",
+        why: "Sophisticated mail filters can detect that this email did not originate from Microsoft systems, and the destination links do not lead back to Microsoft."
+      },
+      link: {
+        see: "https://outlook-storage-upgrade.weebly.com/login.html",
+        value: "weebly.com (free website builder domain)",
+        why: "Microsoft will never host account settings or upgrade tools on free third-party platforms like Weebly. This link leads to a credentials harvester."
+      }
+    }
   },
   {
     id: "easy-3",
@@ -95,7 +129,24 @@ The GitHub Team`,
       "Does this email use high-pressure tactics or threaten to delete your account if you don't act?"
     ],
     explanation: "This is a legitimate security notification. The sender domain ('github.com') is correct, the link points directly to the genuine GitHub settings page ('github.com/settings/keys'), and there are no high-pressure tactics or demands for sensitive credentials. It is simply informing you of an event and directing you to the standard, secure dashboard to manage your settings.",
-    phishingIndicators: []
+    phishingIndicators: [],
+    investigation: {
+      sender: {
+        see: "GitHub Security",
+        value: "noreply@github.com",
+        why: "This is the authentic, official email address used by GitHub for security notifications."
+      },
+      domain: {
+        see: "github.com",
+        value: "github.com (authentic domain)",
+        why: "The domain is verified. Email authentication protocols (SPF/DKIM) confirm this email was sent by GitHub's official mail systems."
+      },
+      link: {
+        see: "https://github.com/settings/keys",
+        value: "github.com (official settings dashboard)",
+        why: "The link points directly to the genuine GitHub portal to manage active keys safely."
+      }
+    }
   },
 
   // MEDIUM SCENARIOS
@@ -130,7 +181,24 @@ PayPal Merchant Services`,
       { type: "typosquatting", value: "paypaI-security.com", label: "Homoglyph Attack (Capital 'I' for 'l')" },
       { type: "link", value: "paypal.com-dispute-cancellation-portal.info", label: "Subdomain Spoofing (Actual root is .info)" },
       { type: "urgency", value: "within the next 2 hours / dispute immediately", label: "Urgency Pressure" }
-    ]
+    ],
+    investigation: {
+      sender: {
+        see: "PayPal Merchant Billing",
+        value: "billing-update-service@paypaI-security.com",
+        why: "This is a 'homoglyph' typosquatting trick. The word 'paypaI' ends with a capital 'I' (eye) which looks identical to a lowercase 'l' (el) in many fonts, hiding the fake domain."
+      },
+      domain: {
+        see: "paypaI-security.com",
+        value: "paypaI-security.com (not paypal.com)",
+        why: "This is a completely separate lookalike domain set up by attackers. PayPal emails originate from '@paypal.com'."
+      },
+      link: {
+        see: "https://paypal.com-dispute-cancellation-portal.info/webscr",
+        value: "paypal.com-dispute-cancellation-portal.info (root domain: .info)",
+        why: "Although 'paypal.com' is written at the beginning, the actual destination domain is 'com-dispute-cancellation-portal.info'. Subdomains are read right-to-left from the TLD."
+      }
+    }
   },
   {
     id: "medium-2",
@@ -158,12 +226,29 @@ Director of Human Resources`,
       "Check the login link domain: 'secure-employee-login.com'. Is that your organization's domain?",
       "Does HR typically threaten to withhold salaries for standard portal updates?"
     ],
-    explanation: "This is a spear-phishing attack targeted at employees. The attacker created a lookalike domain for the company's internal HR team ('cyberquest-internal.com') and hosted a credential harvesting form on 'secure-employee-login.com'. HR departments typically communicate payroll updates well in advance and handle transitions through official, pre-established internal channels, rather than threatening salary withholding.",
+    explanation: "This is a targeted spear-phishing attack. The attacker created a lookalike domain for the company's internal HR team ('cyberquest-internal.com') and hosted a credential harvesting form on 'secure-employee-login.com'. HR departments communicate payroll updates well in advance and handle transitions through official, pre-established internal channels.",
     phishingIndicators: [
       { type: "sender", value: "cyberquest-internal.com", label: "Spear Phishing Lookalike Domain" },
       { type: "link", value: "secure-employee-login.com", label: "External Credential Harvester" },
       { type: "coercion", value: "salary check being withheld", label: "Professional Coercion" }
-    ]
+    ],
+    investigation: {
+      sender: {
+        see: "HR Department",
+        value: "hr-benefits@cyberquest-internal.com",
+        why: "The sender domain is 'cyberquest-internal.com'. The organization's official email domain is '@cyberquest.dev', making this lookalike address highly suspicious."
+      },
+      domain: {
+        see: "cyberquest-internal.com",
+        value: "cyberquest-internal.com (lookalike domain)",
+        why: "This external lookalike domain was registered specifically to mimic internal company communications."
+      },
+      link: {
+        see: "https://hr-portal-cyberquest.secure-employee-login.com/payroll",
+        value: "secure-employee-login.com (external portal)",
+        why: "The login page is hosted on 'secure-employee-login.com', an external domain not associated with the company's official cloud services."
+      }
+    }
   },
   {
     id: "medium-3",
@@ -191,7 +276,24 @@ The Google Accounts Team`,
       "Does the email ask you to reply with your password or input your credentials on an external site?"
     ],
     explanation: "This is a legitimate Google Security Alert. The sender domain ('accounts.google.com') is authentic and cryptographically verified. The destination URL ('myaccount.google.com/device-activity') is a genuine, secure sub-domain of Google. The email does not use alarmist, threat-based language or direct you to any third-party credential portal.",
-    phishingIndicators: []
+    phishingIndicators: [],
+    investigation: {
+      sender: {
+        see: "Google Workspace Team",
+        value: "no-reply@accounts.google.com",
+        why: "This is the authentic sender address used by Google to distribute security alerts."
+      },
+      domain: {
+        see: "accounts.google.com",
+        value: "accounts.google.com (authentic subdomain)",
+        why: "This is a secure Google subdomain. Email encryption headers prove the message is authentic."
+      },
+      link: {
+        see: "https://myaccount.google.com/device-activity",
+        value: "myaccount.google.com (Google security portal)",
+        why: "The link directs to your genuine Google Account settings page to verify active logins."
+      }
+    }
   },
 
   // HARD SCENARIOS
@@ -225,7 +327,24 @@ DHL Express Support`,
       { type: "sender", value: "dhl-delivery-notification.com", label: "Spoofed Logistics Domain" },
       { type: "link", value: "dhl-pay-fees.com", label: "Fake Payment Gateway" },
       { type: "tactic", value: "Small fee ($3.50)", label: "Low-Friction Financial Trap" }
-    ]
+    ],
+    investigation: {
+      sender: {
+        see: "DHL Express Delivery",
+        value: "dhl.support@dhl-delivery-notification.com",
+        why: "The actual email uses 'dhl-delivery-notification.com'. DHL emails will originate from official domains like '@dhl.com' or regional support routes."
+      },
+      domain: {
+        see: "dhl-delivery-notification.com",
+        value: "dhl-delivery-notification.com (unrelated domain)",
+        why: "This is a lookalike domain registered by external actors to host fake logistics notifications."
+      },
+      link: {
+        see: "https://dhl-pay-fees.com/tracking/940291",
+        value: "dhl-pay-fees.com (external payment harvester)",
+        why: "DHL will never direct you to external portals like 'dhl-pay-fees.com' to clear customs duties. This page is set up to capture credit card details."
+      }
+    }
   },
   {
     id: "hard-2",
@@ -250,7 +369,7 @@ DocuSign Inc.`,
     isPhishing: true,
     hints: [
       "Examine the sender email domain: 'docs-signature-routing.com'. Is it the official 'docusign.com' domain?",
-      "Look at the link destination domain: 'docusign.com-document-viewer-online.org'. What is the actual top-level domain extension and root domain here?",
+      "Look at the link destination domain: 'docusign.com-document-viewer-online.org'. What is the TLD extension and root domain?",
       "Who sent the document? Do you know Linda Vance from NextGenHacks?"
     ],
     explanation: "This is a targeted phishing attack using DocuSign branding. The email appears highly authentic, but the sender domain is 'docs-signature-routing.com' instead of 'docusign.com'. The signing link uses subdomain spoofing, where the domain name is 'com-document-viewer-online.org', NOT 'docusign.com'. Clicking this link would lead to a fake DocuSign login page designed to steal your credentials.",
@@ -258,7 +377,24 @@ DocuSign Inc.`,
       { type: "sender", value: "docs-signature-routing.com", label: "Mismatched Sender Domain" },
       { type: "link", value: "docusign.com-document-viewer-online.org", label: "Spoofed DocuSign Domain (.org root)" },
       { type: "content", value: "NDA_Agreement_Draft_NextGenHacks", label: "Context-Specific Baiting" }
-    ]
+    ],
+    investigation: {
+      sender: {
+        see: "DocuSign Signature Service",
+        value: "docusign@docs-signature-routing.com",
+        why: "DocuSign notifications come from '@docusign.com' or '@e.docusign.com'. The domain 'docs-signature-routing.com' is suspicious and unofficial."
+      },
+      domain: {
+        see: "docs-signature-routing.com",
+        value: "docs-signature-routing.com (fake router domain)",
+        why: "This domain is set up to mimic DocuSign's mail routing but is not owned by DocuSign."
+      },
+      link: {
+        see: "https://docusign.com-document-viewer-online.org/signing/env=...",
+        value: "com-document-viewer-online.org (root domain: .org)",
+        why: "The link text looks like docusign.com, but reading right-to-left shows the true destination is 'com-document-viewer-online.org', a spoofed signing portal."
+      }
+    }
   },
   {
     id: "hard-3",
@@ -289,7 +425,24 @@ Heroku Security Team`,
       "Are there spelling mistakes, typos, or high-pressure threats?"
     ],
     explanation: "This is a legitimate Heroku security announcement. The links point directly to standard subdomains of the official website ('dashboard.heroku.com' and 'devcenter.heroku.com'). The instructions ask you to navigate to your dashboard to make changes rather than sending your credentials or clicking a suspicious third-party URL. The sender address is verified as 'heroku.com'.",
-    phishingIndicators: []
+    phishingIndicators: [],
+    investigation: {
+      sender: {
+        see: "Heroku Security",
+        value: "security-alerts@heroku.com",
+        why: "This is the authentic Heroku security team email address."
+      },
+      domain: {
+        see: "heroku.com",
+        value: "heroku.com (verified domain)",
+        why: "The domain is authentic. SPF and DKIM validations confirm it is sent from Heroku's verified mail servers."
+      },
+      link: {
+        see: "https://dashboard.heroku.com/account",
+        value: "heroku.com (official dashboard)",
+        why: "The link directs to the genuine Heroku developer dashboard console to rotate API keys securely."
+      }
+    }
   },
   {
     id: "medium-4",
@@ -323,7 +476,23 @@ IT Operations Team`,
       { type: "sender", value: "zoom-verification-meetings.com", label: "Spoofed Domain" },
       { type: "link", value: "zoom-verification-meetings.com/join", label: "Fake Zoom Registration Link" },
       { type: "urgency", value: "may impact workspace system access", label: "System Restriction Threat" }
-    ]
+    ],
+    investigation: {
+      sender: {
+        see: "Zoom Meeting Services",
+        value: "no-reply@zoom-verification-meetings.com",
+        why: "The sender domain is 'zoom-verification-meetings.com'. Authentic Zoom notifications come from '@zoom.us' or '@zoom.com'."
+      },
+      domain: {
+        see: "zoom-verification-meetings.com",
+        value: "zoom-verification-meetings.com (lookalike domain)",
+        why: "This domain is not owned by Zoom. It is a lookalike registered to trick meeting participants."
+      },
+      link: {
+        see: "https://zoom-verification-meetings.com/join/meeting-84920491",
+        value: "zoom-verification-meetings.com (external spoof page)",
+        why: "The link directs to the fake domain 'zoom-verification-meetings.com' instead of 'zoom.us'. It is designed to capture login details during a fake registration."
+      }
+    }
   }
 ];
-
