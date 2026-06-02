@@ -290,5 +290,40 @@ Heroku Security Team`,
     ],
     explanation: "This is a legitimate Heroku security announcement. The links point directly to standard subdomains of the official website ('dashboard.heroku.com' and 'devcenter.heroku.com'). The instructions ask you to navigate to your dashboard to make changes rather than sending your credentials or clicking a suspicious third-party URL. The sender address is verified as 'heroku.com'.",
     phishingIndicators: []
+  },
+  {
+    id: "medium-4",
+    difficulty: "medium",
+    senderName: "Zoom Meeting Services",
+    senderEmail: "no-reply@zoom-verification-meetings.com",
+    subject: "Mandatory Workspace Security Compliance Sync - Register Now",
+    date: "June 2, 2026",
+    body: `Hi there,
+
+You are invited to a mandatory Zoom sync regarding our updated workspace security policies.
+
+Topic: Workspace Security Compliance Sync
+Time: June 5, 2026, 02:00 PM EST
+
+Please register for the meeting and link your account to confirm your attendance:
+https://zoom-verification-meetings.com/join/meeting-84920491
+
+If you do not register before the start time, you will not receive compliance credit, which may impact your workspace system access.
+
+Thank you,
+IT Operations Team`,
+    isPhishing: true,
+    hints: [
+      "Check the sender email domain closely. Does Zoom host meeting invitations on 'zoom-verification-meetings.com'?",
+      "Look for high-pressure language threatening that your workspace access will be impacted.",
+      "Verify the registration link domain. Safe Zoom meetings use zoom.us or zoom.com."
+    ],
+    explanation: "This is a phishing attempt. The sender domain ('zoom-verification-meetings.com') and the registration link are spoofed lookalike domains registered by attackers to harvest credentials. Legitimate Zoom meeting invites are sent from the organization's verified domain or Zoom's official 'zoom.us' service, and do not threaten immediate account suspension for missing a sync.",
+    phishingIndicators: [
+      { type: "sender", value: "zoom-verification-meetings.com", label: "Spoofed Domain" },
+      { type: "link", value: "zoom-verification-meetings.com/join", label: "Fake Zoom Registration Link" },
+      { type: "urgency", value: "may impact workspace system access", label: "System Restriction Threat" }
+    ]
   }
 ];
+

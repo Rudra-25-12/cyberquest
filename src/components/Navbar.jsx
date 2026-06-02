@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Menu, X, LogOut, User, LayoutDashboard, Terminal } from 'lucide-react';
+import { Shield, Menu, X, LogOut, User, LayoutDashboard, Terminal, Mail } from 'lucide-react';
 
 /**
  * Navbar Component.
@@ -26,6 +26,7 @@ export default function Navbar({ currentView, onNavigate, onShowToast }) {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: 'phishing-detective', label: 'Phishing Detective', icon: <Mail className="w-4 h-4" /> },
     { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4" /> },
   ];
 

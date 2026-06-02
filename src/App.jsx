@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import PhishingDetectivePage from './pages/PhishingDetectivePage';
 import ProfilePage from './pages/ProfilePage';
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -9,7 +10,7 @@ import { Shield } from 'lucide-react';
 
 function AppContent() {
   const { user, loading } = useAuth();
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'profile'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'phishing-detective' | 'profile'
   const [toast, setToast] = useState(null);
 
   // Helper to trigger floating toast alerts
@@ -65,9 +66,13 @@ function AppContent() {
         />
         
         <main className="pb-12">
-          {currentView === 'dashboard' ? (
+          {currentView === 'dashboard' && (
             <DashboardPage onNavigate={handleNavigate} onShowToast={showToast} />
-          ) : (
+          )}
+          {currentView === 'phishing-detective' && (
+            <PhishingDetectivePage onShowToast={showToast} />
+          )}
+          {currentView === 'profile' && (
             <ProfilePage onShowToast={showToast} />
           )}
         </main>

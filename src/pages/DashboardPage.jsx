@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth, calculateLevelProgress } from '../context/AuthContext';
 import { Award, BookOpen, Lock, ShieldCheck, Zap, Key, Eye } from 'lucide-react';
 
 /**
@@ -8,6 +8,8 @@ import { Award, BookOpen, Lock, ShieldCheck, Zap, Key, Eye } from 'lucide-react'
  */
 export default function DashboardPage({ onNavigate, onShowToast }) {
   const { userProfile } = useAuth();
+  const xp = userProfile?.xp || 0;
+  const { level, maxXp, percent } = calculateLevelProgress(xp);
 
   // Basic learning tracks info to mock learning structure
   const learningTracks = [
@@ -17,19 +19,19 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       desc: 'Master basic network security, threat modeling, and defensive system principles.',
       xp: 200,
       challenges: 5,
-      status: 'available',
-      badgeColor: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20',
-      icon: <ShieldCheck className="w-5 h-5 text-[#3B82F6]" />
+      status: 'in_development',
+      badgeColor: 'text-[#9CA3AF] bg-[#171A21] border-[#1F242F]',
+      icon: <ShieldCheck className="w-5 h-5 text-[#9CA3AF]" />
     },
     {
       id: 'phishing',
       title: 'Phishing Detective',
       desc: 'Analyze headers, investigate link redirects, and identify phishing scams in mock inbox scenarios.',
       xp: 350,
-      challenges: 8,
-      status: 'coming_soon',
-      badgeColor: 'text-[#9CA3AF] bg-[#171A21] border-[#1F242F]',
-      icon: <Eye className="w-5 h-5 text-[#9CA3AF]" />
+      challenges: 10,
+      status: 'available',
+      badgeColor: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20',
+      icon: <Eye className="w-5 h-5 text-[#3B82F6]" />
     },
     {
       id: 'owasp',
@@ -37,14 +39,11 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
       desc: 'Investigate injection flaws, XSS exploits, and broken authentication scenarios.',
       xp: 500,
       challenges: 12,
-      status: 'locked',
+      status: 'coming_soon',
       badgeColor: 'text-[#9CA3AF] bg-[#171A21] border-[#1F242F]',
       icon: <Key className="w-5 h-5 text-[#9CA3AF]" />
     }
   ];
-
-  // Calculate percentage of level completed
-  const xpPercent = Math.min(100, Math.floor(((userProfile?.xp || 0) / (userProfile?.xpNeeded || 100)) * 100));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
@@ -78,14 +77,14 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
           </div>
           <div className="mt-4">
             <div className="flex justify-between items-baseline mb-2">
-              <span className="text-2xl font-bold text-[#F3F4F6]">Level {userProfile?.level || 1}</span>
-              <span className="text-xs text-[#9CA3AF]">{userProfile?.xp || 0} / {userProfile?.xpNeeded || 100} XP</span>
+              <span className="text-2xl font-bold text-[#F3F4F6]">Level {level}</span>
+              <span className="text-xs text-[#9CA3AF]">{xp} / {maxXp} XP</span>
             </div>
             {/* Progress Bar container */}
             <div className="w-full bg-[#0F1115] h-2 rounded-full overflow-hidden border border-[#1F242F]">
               <div 
                 className="bg-[#3B82F6] h-full rounded-full transition-all duration-500" 
-                style={{ width: `${xpPercent}%` }}
+                style={{ width: `${percent}%` }}
               ></div>
             </div>
           </div>
@@ -129,7 +128,7 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {learningTracks.map((track) => {
             const isAvailable = track.status === 'available';
-            const isComingSoon = track.status === 'coming_soon';
+            const isInDevelopment = track.status === 'in_development';
 
             return (
               <div 
@@ -169,22 +168,26 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
                 </div>
 
                 <div className="w-full mt-2">
-                  {isAvailable && (
+                  {isAvailable ? (
                     <button
-                      onClick={() => onShowToast ? onShowToast("Lab loading...", "info") : alert("Lab starting...")}
+                      onClick={() => {
+                        if (track.id === 'phishing') {
+                          onNavigate('phishing-detective');
+                        } else if (onShowToast) {
+                          onShowToast("Lab loading...", "info");
+                        }
+                      }}
                       className="w-full px-4 py-2 text-sm font-semibold rounded bg-[#3B82F6] hover:bg-[#2563EB] text-white transition-all cursor-pointer shadow-sm hover:shadow-md text-center block"
                     >
                       Start Path
                     </button>
-                  )}
-                  {isComingSoon && (
+                  ) : isInDevelopment ? (
+                    <span className="w-full inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-[#1F242F] text-xs font-semibold text-[#9CA3AF] bg-[#0F1115]/50 justify-center">
+                      <Lock className="w-3.5 h-3.5" /> In Development
+                    </span>
+                  ) : (
                     <span className="w-full inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-[#1F242F] text-xs font-semibold text-[#9CA3AF] bg-[#0F1115]/50 justify-center">
                       <Lock className="w-3.5 h-3.5" /> Coming Soon
-                    </span>
-                  )}
-                  {track.status === 'locked' && (
-                    <span className="w-full inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-[#1F242F] text-xs font-semibold text-[#9CA3AF] bg-[#0F1115]/50 justify-center">
-                      <Lock className="w-3.5 h-3.5" /> Locked
                     </span>
                   )}
                 </div>

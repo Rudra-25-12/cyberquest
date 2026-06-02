@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, calculateLevelProgress } from '../context/AuthContext';
 import { Award, Mail, Calendar, User, Save, ShieldAlert, BadgeCheck } from 'lucide-react';
 
 /**
@@ -12,6 +12,9 @@ export default function ProfilePage({ onShowToast }) {
   const [displayName, setDisplayName] = useState(userProfile?.displayName || '');
   const [bio, setBio] = useState(userProfile?.bio || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const xp = userProfile?.xp || 0;
+  const { level, maxXp, percent } = calculateLevelProgress(xp);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -34,25 +37,31 @@ export default function ProfilePage({ onShowToast }) {
     }
   };
 
-  // Mock list of all achievements/badges in the platform
+  // List of all achievements/badges in the platform
   const badgesList = [
     {
       id: 'Initiate',
       title: 'Initiate Cadet',
-      desc: 'Created an account and registered on CyberQuest.',
-      earned: userProfile?.badges?.includes('Initiate') || true,
+      desc: 'Started your cybersecurity training on CyberQuest.',
+      earned: userProfile?.badges?.includes('Initiate') || false,
     },
     {
-      id: 'PhishingSleuth',
+      id: 'FirstInvestigation',
+      title: 'First Investigation',
+      desc: 'Completed your first phishing analysis lab.',
+      earned: userProfile?.badges?.includes('FirstInvestigation') || false,
+    },
+    {
+      id: 'PhishingInvestigator',
       title: 'Phishing Investigator',
-      desc: 'Identify phishing emails with 100% accuracy.',
-      earned: userProfile?.badges?.includes('PhishingSleuth') || false,
+      desc: 'Scored 8/10 or higher in the Phishing Detective lab.',
+      earned: userProfile?.badges?.includes('PhishingInvestigator') || false,
     },
     {
-      id: 'SecuritySpecialist',
-      title: 'Vulnerability Auditor',
-      desc: 'Detect and patch all injection flaws in OWASP training.',
-      earned: userProfile?.badges?.includes('SecuritySpecialist') || false,
+      id: 'PerfectAnalyst',
+      title: 'Perfect Analyst',
+      desc: 'Scored a perfect 10/10 in the Phishing Detective lab.',
+      earned: userProfile?.badges?.includes('PerfectAnalyst') || false,
     },
   ];
 
@@ -92,7 +101,7 @@ export default function ProfilePage({ onShowToast }) {
                 }}
               />
               <span className="absolute bottom-0 right-0 inline-flex items-center justify-center bg-[#3B82F6] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-[#171A21]">
-                LVL {userProfile?.level || 1}
+                LVL {level}
               </span>
             </div>
 
@@ -115,6 +124,30 @@ export default function ProfilePage({ onShowToast }) {
                 <span>Joined: {formatDate(userProfile?.createdAt)}</span>
               </div>
             </div>
+          </div>
+
+          {/* XP Progress Card */}
+          <div className="bg-[#171A21] border border-[#1F242F] p-6 rounded-lg flex flex-col gap-4">
+            <h3 className="text-xs font-bold text-[#9CA3AF] uppercase tracking-wider">Level Progress</h3>
+            <div className="flex justify-between items-baseline">
+              <span className="text-lg font-bold text-[#F3F4F6]">Level {level}</span>
+              <span className="text-xs text-[#9CA3AF] font-mono">{xp} / {maxXp} XP</span>
+            </div>
+            <div className="w-full bg-[#0F1115] h-2 rounded-full overflow-hidden border border-[#1F242F]">
+              <div 
+                className="bg-[#3B82F6] h-full rounded-full transition-all duration-500" 
+                style={{ width: `${percent}%` }}
+              ></div>
+            </div>
+            {level < 5 ? (
+              <span className="text-[10px] text-[#9CA3AF]">
+                Earn {maxXp - xp} more XP to reach Level {level + 1}
+              </span>
+            ) : (
+              <span className="text-[10px] text-[#22C55E] font-semibold">
+                Maximum Level Achieved!
+              </span>
+            )}
           </div>
         </div>
 
