@@ -1,122 +1,105 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
+import Navbar from './components/Navbar';
+import Toast from './components/Toast';
+import { Shield } from 'lucide-react';
 
-function App() {
-  const [count, setCount] = useState(0)
+function AppContent() {
+  const { user, loading } = useAuth();
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'profile'
+  const [toast, setToast] = useState(null);
 
+  // Helper to trigger floating toast alerts
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const handleNavigate = (view) => {
+    setCurrentView(view);
+  };
+
+  // 1. Loading State Screen
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0F1115] text-[#F3F4F6] flex flex-col justify-center items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Shield className="w-8 h-8 text-[#3B82F6] animate-pulse" />
+          <span className="text-2xl font-bold tracking-tight">
+            CYBER<span className="text-[#3B82F6]">QUEST</span>
+          </span>
+        </div>
+        <p className="text-xs text-[#9CA3AF] font-mono tracking-widest uppercase animate-pulse">
+          Decrypting session...
+        </p>
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated state: Force Product Landing / LoginPage
+  if (!user) {
+    return (
+      <>
+        <LoginPage onShowToast={showToast} />
+        {toast && (
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={() => setToast(null)} 
+          />
+        )}
+      </>
+    );
+  }
+
+  // 3. Authenticated State: Main Layout with Navigation
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-[#0F1115] text-[#F3F4F6] flex flex-col justify-between selection:bg-[#3B82F6]/30 selection:text-white">
+      <div>
+        <Navbar 
+          currentView={currentView} 
+          onNavigate={handleNavigate} 
+          onShowToast={showToast} 
+        />
+        
+        <main className="pb-12">
+          {currentView === 'dashboard' ? (
+            <DashboardPage onNavigate={handleNavigate} onShowToast={showToast} />
+          ) : (
+            <ProfilePage onShowToast={showToast} />
+          )}
+        </main>
+      </div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* Shared Footer */}
+      <footer className="border-t border-[#1F242F] bg-[#171A21]/20 py-6 text-center text-xs text-[#9CA3AF]">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p>&copy; {new Date().getFullYear()} CyberQuest. Defensive Security Learning Platform.</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-[#F3F4F6] transition-colors">Documentation</a>
+            <a href="#" className="hover:text-[#F3F4F6] transition-colors">Support</a>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </footer>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Floating Notifications */}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
+    </div>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}

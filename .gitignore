@@ -1,3 +1,13 @@
+node_modules
+dist
+dist-ssr
+
+.env
+.env.local
+.env.*
+!.env.example
+
+*.local
 # Logs
 logs
 *.log
