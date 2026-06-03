@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { mockScenarios } from '../data/mockScenarios';
 import { getStorageKey } from '../utils/storage';
 import { fundamentalsScenarios } from '../data/fundamentalsScenarios';
+import { toast } from 'sonner';
 import { 
   Sparkles, 
   Shield, 
@@ -22,9 +23,8 @@ import {
 /**
  * AiChallengeLabPage Component.
  * @param {Object} props
- * @param {function(string, string):void} props.onShowToast - Notification callback
  */
-export default function AiChallengeLabPage({ onShowToast }) {
+export default function AiChallengeLabPage() {
   const { user, userProfile, updateProgression } = useAuth();
   const [selectedTopic, setSelectedTopic] = useState('Phishing');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Medium');
@@ -173,7 +173,7 @@ export default function AiChallengeLabPage({ onShowToast }) {
       }
 
       setChallenge(adapted);
-      onShowToast("Offline challenge loaded from local database.", "info");
+      toast.info("Offline challenge loaded from local database.");
     } catch {
       setError("Failed to load local offline scenario.");
     } finally {
@@ -204,9 +204,9 @@ export default function AiChallengeLabPage({ onShowToast }) {
     }
 
     if (userCorrect) {
-      onShowToast("Correct choice! +10 XP earned.", "success");
+      toast.success("Correct! +10 XP earned.");
     } else {
-      onShowToast("Unsafe decision. Review the explanation.", "error");
+      toast.error("Not quite. Review the explanation.");
     }
 
     try {
@@ -224,19 +224,25 @@ export default function AiChallengeLabPage({ onShowToast }) {
     if (!res) return;
 
     if (res.levelUp) {
-      onShowToast(`Level Up! You are now Level ${res.newLevel}!`, 'success');
-    } else if (res.xpEarned > 0) {
-      onShowToast(`+${res.xpEarned} XP Earned`, 'info');
+      toast.success(`Level Up! Level ${res.newLevel}`);
     }
 
-    if (res.badgeUnlocked) {
+    if (res.badgesUnlocked && res.badgesUnlocked.length > 0) {
       const badgeTitles = {
         'AIExplorer': 'AI Explorer'
       };
-      const title = badgeTitles[res.badgeUnlocked] || res.badgeUnlocked;
+      res.badgesUnlocked.forEach((badge, index) => {
+        const title = badgeTitles[badge] || badge;
+        setTimeout(() => {
+          toast.success(`Badge Unlocked: ${title}`);
+        }, 1000 * (index + 1));
+      });
+    }
+
+    if (res.certificateEarned) {
       setTimeout(() => {
-        onShowToast(`Achievement Unlocked: ${title}!`, 'success');
-      }, 1000);
+        toast.success(`Certificate Earned: ${res.certificateEarned}`);
+      }, 1500);
     }
   };
 

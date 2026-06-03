@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { mockScenarios } from '../data/mockScenarios';
 import { useAuth } from '../context/AuthContext';
 import { getStorageKey } from '../utils/storage';
+import { toast } from 'sonner';
 import { 
   Shield, 
   AlertTriangle, 
@@ -24,9 +25,8 @@ import {
 /**
  * PhishingDetectivePage Component.
  * @param {Object} props
- * @param {function(string, string):void} props.onShowToast - Notification callback
  */
-export default function PhishingDetectivePage({ onShowToast }) {
+export default function PhishingDetectivePage() {
   const { user, updateProgression } = useAuth();
   const scenarios = mockScenarios;
   const [selectedId, setSelectedId] = useState(scenarios[0]?.id || null);
@@ -113,9 +113,9 @@ export default function PhishingDetectivePage({ onShowToast }) {
     }
 
     if (isCorrect) {
-      onShowToast('Correct answer! Good analysis.', 'success');
+      toast.success("Correct! +10 XP earned.");
     } else {
-      onShowToast('Incorrect analysis. Review the red flags.', 'error');
+      toast.error("Not quite. Review the explanation.");
     }
 
     // Progression System Integration (XP and Badges)
@@ -172,21 +172,28 @@ export default function PhishingDetectivePage({ onShowToast }) {
     if (!res) return;
 
     if (res.levelUp) {
-      onShowToast(`Level Up! You are now Level ${res.newLevel}!`, 'success');
-    } else if (res.xpEarned > 0) {
-      onShowToast(`+${res.xpEarned} XP Earned`, 'info');
+      toast.success(`Level Up! Level ${res.newLevel}`);
     }
 
-    if (res.badgeUnlocked) {
+    if (res.badgesUnlocked && res.badgesUnlocked.length > 0) {
       const badgeTitles = {
         'FirstInvestigation': 'First Investigation',
+        'CertifiedLearner': 'Certified Learner',
         'PhishingInvestigator': 'Phishing Investigator',
         'PerfectAnalyst': 'Perfect Analyst'
       };
-      const title = badgeTitles[res.badgeUnlocked] || res.badgeUnlocked;
+      res.badgesUnlocked.forEach((badge, index) => {
+        const title = badgeTitles[badge] || badge;
+        setTimeout(() => {
+          toast.success(`Badge Unlocked: ${title}`);
+        }, 1000 * (index + 1));
+      });
+    }
+
+    if (res.certificateEarned) {
       setTimeout(() => {
-        onShowToast(`Achievement Unlocked: ${title}!`, 'success');
-      }, 1000);
+        toast.success(`Certificate Earned: ${res.certificateEarned}`);
+      }, 1500);
     }
   };
 
@@ -209,7 +216,7 @@ export default function PhishingDetectivePage({ onShowToast }) {
       } catch (e) {
         console.error(e);
       }
-      onShowToast('Progress reset successfully.', 'info');
+      toast.info('Progress reset successfully.');
     }
   };
 

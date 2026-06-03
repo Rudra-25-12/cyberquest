@@ -59,3 +59,79 @@
   }
 }
 
+/* Sonner Overrides for CyberQuest Dark Theme */
+[data-sonner-toast] {
+  --normal-bg: #171A21 !important;
+  --normal-border: #1F242F !important;
+  --normal-text: #F3F4F6 !important;
+  
+  --success-bg: #171A21 !important;
+  --success-border: rgba(34, 197, 94, 0.2) !important;
+  --success-text: #22C55E !important; /* Rich green for icon/accents */
+  
+  --error-bg: #171A21 !important;
+  --error-border: rgba(239, 68, 68, 0.2) !important;
+  --error-text: #EF4444 !important; /* Rich red for icon/accents */
+  
+  --warning-bg: #171A21 !important;
+  --warning-border: rgba(245, 158, 11, 0.2) !important;
+  --warning-text: #F59E0B !important; /* Rich warning color */
+  
+  --info-bg: #171A21 !important;
+  --info-border: rgba(59, 130, 246, 0.2) !important;
+  --info-text: #3B82F6 !important; /* Blue accent color */
+
+  background-color: #171A21 !important;
+  border-radius: 0.5rem !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3) !important;
+}
+
+/* Keep the text itself clean off-white while icons/borders use the rich colors */
+[data-sonner-toast] [data-description] {
+  color: #9CA3AF !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: #F3F4F6 !important;
+}
+
+/* Radix UI Dialog Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes zoomIn {
+  from { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes zoomOut {
+  from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  to { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.15s ease-out forwards;
+}
+
+.animate-fadeOut {
+  animation: fadeOut 0.15s ease-in forwards;
+}
+
+.animate-zoomIn {
+  animation: zoomIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-zoomOut {
+  animation: zoomOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+
+

@@ -241,9 +241,11 @@ export function AuthProvider({ children }) {
       const isFirstCompletion = activityMetadata?.isModuleCompletion 
         ? !updatedCertificates.some(c => c.module === activityMetadata.module)
         : false;
+      let certificateEarned = null;
 
       if (activityMetadata?.isModuleCompletion && isFirstCompletion) {
         const moduleName = activityMetadata.module;
+        certificateEarned = moduleName;
         let abbrev = 'SF';
         if (moduleName === 'Phishing Detective') abbrev = 'PD';
         else if (moduleName === 'OWASP Top 10 Defenses') abbrev = 'OW';
@@ -370,7 +372,8 @@ export function AuthProvider({ children }) {
         levelUp: newLevel > currentLevel,
         newLevel,
         badgeUnlocked: badgesUnlocked[0] || null,
-        badgesUnlocked
+        badgesUnlocked,
+        certificateEarned
       };
     } catch (err) {
       console.error("Failed to update progression:", err);

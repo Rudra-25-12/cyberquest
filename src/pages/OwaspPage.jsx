@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { owaspScenarios } from '../data/owaspScenarios';
 import { useAuth } from '../context/AuthContext';
 import { getStorageKey } from '../utils/storage';
+import { toast } from 'sonner';
 import { 
   Shield, 
   CheckCircle2, 
@@ -20,9 +21,8 @@ import {
 /**
  * OwaspPage Component.
  * @param {Object} props
- * @param {function(string, string):void} props.onShowToast - Notification callback
  */
-export default function OwaspPage({ onShowToast }) {
+export default function OwaspPage() {
   const { user, updateProgression } = useAuth();
   const scenarios = owaspScenarios;
   const [selectedId, setSelectedId] = useState(scenarios[0]?.id || null);
@@ -84,9 +84,9 @@ export default function OwaspPage({ onShowToast }) {
     }
 
     if (isCorrect) {
-      onShowToast('Correct choice! Implementation matches AppSec best practices.', 'success');
+      toast.success("Correct! +10 XP earned.");
     } else {
-      onShowToast('Vulnerable implementation. Review the explanation to understand the fix.', 'error');
+      toast.error("Not quite. Review the explanation.");
     }
 
     // Progression system integration
@@ -147,9 +147,7 @@ export default function OwaspPage({ onShowToast }) {
     if (!res) return;
 
     if (res.levelUp) {
-      onShowToast(`Level Up! You are now Level ${res.newLevel}!`, 'success');
-    } else if (res.xpEarned > 0) {
-      onShowToast(`+${res.xpEarned} XP Earned`, 'info');
+      toast.success(`Level Up! Level ${res.newLevel}`);
     }
 
     if (res.badgesUnlocked && res.badgesUnlocked.length > 0) {
@@ -163,9 +161,15 @@ export default function OwaspPage({ onShowToast }) {
       res.badgesUnlocked.forEach((badge, index) => {
         const title = badgeTitles[badge] || badge;
         setTimeout(() => {
-          onShowToast(`Achievement Unlocked: ${title}!`, 'success');
+          toast.success(`Badge Unlocked: ${title}`);
         }, 1000 * (index + 1));
       });
+    }
+
+    if (res.certificateEarned) {
+      setTimeout(() => {
+        toast.success(`Certificate Earned: ${res.certificateEarned}`);
+      }, 1500);
     }
   };
 
@@ -182,7 +186,7 @@ export default function OwaspPage({ onShowToast }) {
       } catch (e) {
         console.error(e);
       }
-      onShowToast('OWASP Defenses progress reset successfully.', 'info');
+      toast.info('OWASP Defenses progress reset successfully.');
     }
   };
 

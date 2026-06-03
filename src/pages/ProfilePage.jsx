@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, calculateLevelProgress } from '../context/AuthContext';
 import { Award, Mail, Calendar, User, Save, ShieldAlert, BadgeCheck, FileText, Download, Eye, X } from 'lucide-react';
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '../components/ui/HoverCard';
 
 /**
  * ProfilePage Component.
@@ -14,11 +15,21 @@ export default function ProfilePage({ onShowToast }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeCert, setActiveCert] = useState(null);
 
+  useEffect(() => {
+    const scrollToCertificates = localStorage.getItem('cyberquest_scroll_to_certificates');
+    if (scrollToCertificates) {
+      localStorage.removeItem('cyberquest_scroll_to_certificates');
+      const element = document.getElementById('earned-certificates-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, []);
+
   const handleDownloadPNG = (cert) => {
-    // Create a canvas element
     const canvas = document.createElement('canvas');
-    canvas.width = 1600; // high res width
-    canvas.height = 1200; // high res height
+    canvas.width = 1600;
+    canvas.height = 1200;
     const ctx = canvas.getContext('2d');
 
     // Fill background: dark slate (#0F1115)
@@ -39,54 +50,157 @@ export default function ProfilePage({ onShowToast }) {
     ctx.lineWidth = 2;
     ctx.strokeRect(80, 80, canvas.width - 160, canvas.height - 160);
 
+    // 1. Logo (CYBERQUEST)
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-
-    // 1. Logo
     ctx.fillStyle = '#3B82F6';
-    ctx.font = 'bold 36px sans-serif';
-    ctx.fillText('CYBERQUEST', canvas.width / 2, 180);
+    ctx.font = 'bold 32px sans-serif';
+    ctx.fillText('CYBERQUEST', canvas.width / 2, 160);
 
-    // 2. Main title
-    ctx.fillStyle = '#F3F4F6';
-    ctx.font = 'bold 64px sans-serif';
-    ctx.fillText('CERTIFICATE OF COMPLETION', canvas.width / 2, 280);
-
-    // 3. Awarded to text
+    // 2. Certificate of Completion Title
     ctx.fillStyle = '#9CA3AF';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText('This certificate is proudly awarded to', canvas.width / 2, 420);
+    ctx.font = 'bold 24px monospace';
+    ctx.fillText('CERTIFICATE OF COMPLETION', canvas.width / 2, 230);
 
-    // 4. User name
-    ctx.fillStyle = '#F3F4F6';
-    ctx.font = 'bold 56px sans-serif';
-    ctx.fillText(userProfile?.displayName || user?.displayName || 'Cyber Cadet', canvas.width / 2, 510);
-
-    // 5. For completing text
+    // 3. Awarded to Statement
     ctx.fillStyle = '#9CA3AF';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText('for successfully completing the learning path', canvas.width / 2, 620);
+    ctx.font = 'italic 22px Georgia, serif';
+    ctx.fillText('This certificate is proudly awarded to', canvas.width / 2, 320);
 
-    // 6. Module Name
+    // 4. Learner Name (Largest visual element, Solid White)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 68px sans-serif';
+    ctx.fillText(userProfile?.displayName || user?.displayName || 'Cyber Cadet', canvas.width / 2, 420);
+
+    // 5. Professional Certification Statement
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '22px sans-serif';
+    ctx.fillText('has met all required standards and successfully demonstrated proficiency in the curriculum of', canvas.width / 2, 530);
+
+    // 6. Module Name (Accent-colored element, prominent but de-emphasized size)
     ctx.fillStyle = '#3B82F6';
-    ctx.font = 'bold 44px sans-serif';
-    ctx.fillText(cert.module, canvas.width / 2, 700);
+    ctx.font = 'bold 46px sans-serif';
+    ctx.fillText(cert.module.toUpperCase(), canvas.width / 2, 620);
 
-    // 7. Score
+    // 7. Achievement Summary Panel Box
+    const boxWidth = 520;
+    const boxHeight = 110;
+    const boxX = (canvas.width - boxWidth) / 2;
+    const boxY = 700;
+
+    // Draw Box Background
+    ctx.fillStyle = '#0F1115';
+    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+    
+    // Draw Box Border
+    ctx.strokeStyle = '#1F242F';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+    // Draw Box Divider Line
+    ctx.strokeStyle = '#1F242F';
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, boxY);
+    ctx.lineTo(canvas.width / 2, boxY + boxHeight);
+    ctx.stroke();
+
+    // Draw Left Half (Final Score)
+    ctx.fillStyle = '#6B7280';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('FINAL SCORE', boxX + boxWidth / 4, boxY + 30);
     ctx.fillStyle = '#22C55E';
-    ctx.font = 'bold 32px monospace';
-    ctx.fillText(`Score: ${cert.score}/10`, canvas.width / 2, 800);
+    ctx.font = 'bold 30px monospace';
+    ctx.fillText(`${cert.score} / 10`, boxX + boxWidth / 4, boxY + 70);
 
-    // 8. Issued Date & ID
+    // Draw Right Half (Path Status)
+    ctx.fillStyle = '#6B7280';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('PATH STATUS', boxX + (boxWidth * 3) / 4, boxY + 30);
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = 'bold 30px monospace';
+    ctx.fillText('SECURE', boxX + (boxWidth * 3) / 4, boxY + 70);
+
+    // 8. CyberQuest Verified Badge stamp on the bottom-right quadrant
+    const sealX = 1360;
+    const sealY = 755;
+    
+    ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 70, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, 62, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.fillStyle = '#22C55E';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText('CYBERQUEST', sealX, sealY - 15);
+    ctx.fillText('VERIFIED', sealX, sealY + 15);
+
+    // 9. Subtle centered Certification Seal near lower section
+    const centerSealX = 800;
+    const centerSealY = 900;
+    ctx.strokeStyle = 'rgba(34, 197, 94, 0.25)';
+    ctx.lineWidth = 2;
+    
+    // Outer circle
+    ctx.beginPath();
+    ctx.arc(centerSealX, centerSealY, 56, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Inner circle
+    ctx.beginPath();
+    ctx.arc(centerSealX, centerSealY, 50, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#22C55E';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('CYBERQUEST', centerSealX, centerSealY - 18);
+    ctx.fillText('VERIFIED', centerSealX, centerSealY + 2);
+    
     ctx.fillStyle = '#9CA3AF';
-    ctx.font = '22px monospace';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText(new Date(cert.issuedAt).getFullYear().toString(), centerSealX, centerSealY + 22);
+
+    // 10. Left Side Metadata columns (Date Issued, Certificate ID)
     const dateFormatted = new Date(cert.issuedAt).toLocaleDateString(undefined, { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     });
-    ctx.fillText(`Issued: ${dateFormatted}`, canvas.width / 2, 940);
-    ctx.fillText(`Certificate ID: ${cert.id}`, canvas.width / 2, 990);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#6B7280';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('DATE ISSUED', 150, 940);
+    ctx.fillStyle = '#F3F4F6';
+    ctx.font = '22px monospace';
+    ctx.fillText(dateFormatted, 150, 975);
+
+    ctx.fillStyle = '#6B7280';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('CERTIFICATE ID', 150, 1035);
+    ctx.fillStyle = '#F3F4F6';
+    ctx.font = '22px monospace';
+    ctx.fillText(cert.id, 150, 1070);
+
+    // 11. Right Side Metadata columns (Verification Code, Verification URL)
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#6B7280';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('VERIFICATION CODE', 1450, 940);
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText(cert.id, 1450, 975);
+
+    ctx.fillStyle = '#6B7280';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('VERIFICATION LINK', 1450, 1035);
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = '22px monospace';
+    ctx.fillText('cyberquest.verify', 1450, 1070);
 
     // Export as download
     const url = canvas.toDataURL('image/png');
@@ -128,66 +242,77 @@ export default function ProfilePage({ onShowToast }) {
       id: 'Initiate',
       title: 'Initiate Cadet',
       desc: 'Started your cybersecurity training on CyberQuest.',
+      requirement: 'Created a CyberQuest account.',
       earned: userProfile?.badges?.includes('Initiate') || false,
     },
     {
       id: 'FirstInvestigation',
       title: 'First Investigation',
       desc: 'Completed your first phishing analysis lab.',
+      requirement: 'Complete your first Phishing Detective challenge.',
       earned: userProfile?.badges?.includes('FirstInvestigation') || false,
     },
     {
       id: 'PhishingInvestigator',
       title: 'Phishing Investigator',
       desc: 'Scored 8/10 or higher in the Phishing Detective lab.',
+      requirement: 'Score 8/10 or higher in Phishing Detective.',
       earned: userProfile?.badges?.includes('PhishingInvestigator') || false,
     },
     {
       id: 'PerfectAnalyst',
       title: 'Perfect Analyst',
       desc: 'Scored a perfect 10/10 in the Phishing Detective lab.',
+      requirement: 'Score 10/10 in Phishing Detective.',
       earned: userProfile?.badges?.includes('PerfectAnalyst') || false,
     },
     {
       id: 'FundamentalsGraduate',
       title: 'Fundamentals Graduate',
       desc: 'Scored 8/10 or higher in the Security Fundamentals lab.',
+      requirement: 'Score 8/10 or higher in Security Fundamentals.',
       earned: userProfile?.badges?.includes('FundamentalsGraduate') || false,
     },
     {
       id: 'SecurityGuardian',
       title: 'Security Guardian',
       desc: 'Scored a perfect 10/10 in the Security Fundamentals lab.',
+      requirement: 'Score 10/10 in Security Fundamentals.',
       earned: userProfile?.badges?.includes('SecurityGuardian') || false,
     },
     {
       id: 'AIExplorer',
       title: 'AI Explorer',
       desc: 'Generated your first AI challenge using Gemini.',
+      requirement: 'Generate your first AI challenge in AI Challenge Lab.',
       earned: userProfile?.badges?.includes('AIExplorer') || false,
     },
     {
       id: 'CertifiedLearner',
       title: 'Certified Learner',
       desc: 'Earned your first training completion certificate on CyberQuest.',
+      requirement: 'Earn your first training completion certificate.',
       earned: userProfile?.badges?.includes('CertifiedLearner') || false,
     },
     {
       id: 'OWASPExplorer',
       title: 'OWASP Explorer',
       desc: 'Completed the OWASP Top 10 Defenses learning path.',
+      requirement: 'Complete the OWASP Top 10 Defenses path.',
       earned: userProfile?.badges?.includes('OWASPExplorer') || false,
     },
     {
       id: 'ThreatHunter',
       title: 'Threat Hunter',
       desc: 'Scored 8/10 or higher in the OWASP Top 10 Defenses lab.',
+      requirement: 'Score 8/10 or higher in OWASP Top 10 Defenses.',
       earned: userProfile?.badges?.includes('ThreatHunter') || false,
     },
     {
       id: 'ApplicationGuardian',
       title: 'Application Guardian',
       desc: 'Scored a perfect 10/10 in the OWASP Top 10 Defenses lab.',
+      requirement: 'Score 10/10 in OWASP Top 10 Defenses.',
       earned: userProfile?.badges?.includes('ApplicationGuardian') || false,
     },
   ];
@@ -340,39 +465,77 @@ export default function ProfilePage({ onShowToast }) {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
               {badgesList.map((badge) => (
-                <div
-                  key={badge.id}
-                  className={`border p-4 rounded-lg flex flex-col gap-3 transition-colors ${
-                    badge.earned
-                      ? 'bg-[#171A21] border-[#22C55E]/20 text-[#F3F4F6]'
-                      : 'bg-[#171A21]/40 border-[#1F242F]/60 text-[#9CA3AF] opacity-60'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <div className={`p-1.5 rounded-md ${badge.earned ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-[#0F1115] text-[#9CA3AF]'}`}>
-                      <Award className="w-5 h-5" />
+                <HoverCard key={badge.id} openDelay={150}>
+                  <HoverCardTrigger asChild>
+                    <div
+                      tabIndex={0}
+                      className={`border p-4 rounded-lg flex flex-col gap-3 transition-colors focus:ring-1 focus:ring-[#3B82F6]/50 focus:border-[#3B82F6] focus:outline-none cursor-pointer ${
+                        badge.earned
+                          ? 'bg-[#171A21] border-[#22C55E]/20 text-[#F3F4F6]'
+                          : 'bg-[#171A21]/40 border-[#1F242F]/60 text-[#9CA3AF] opacity-60'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className={`p-1.5 rounded-md ${badge.earned ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-[#0F1115] text-[#9CA3AF]'}`}>
+                          <Award className="w-5 h-5" />
+                        </div>
+                        {badge.earned ? (
+                          <BadgeCheck className="w-4 h-4 text-[#22C55E]" />
+                        ) : (
+                          <ShieldAlert className="w-4 h-4 text-[#9CA3AF]" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className={`font-semibold text-sm ${badge.earned ? 'text-[#F3F4F6]' : 'text-[#9CA3AF]'}`}>
+                          {badge.title}
+                        </h4>
+                      </div>
                     </div>
-                    {badge.earned ? (
-                      <BadgeCheck className="w-4 h-4 text-[#22C55E]" />
-                    ) : (
-                      <ShieldAlert className="w-4 h-4 text-[#9CA3AF]" />
-                    )}
-                  </div>
-                  <div>
-                    <h4 className={`font-semibold text-sm ${badge.earned ? 'text-[#F3F4F6]' : 'text-[#9CA3AF]'}`}>
-                      {badge.title}
-                    </h4>
-                    <p className="text-xs text-[#9CA3AF] mt-1 leading-snug">
-                      {badge.desc}
-                    </p>
-                  </div>
-                </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex gap-2.5 items-center">
+                          <div className={`p-1.5 rounded-md ${badge.earned ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-[#0F1115] text-[#9CA3AF]'}`}>
+                            <Award className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-sm text-[#F3F4F6]">{badge.title}</h4>
+                            <p className="text-[11px] text-[#9CA3AF] mt-0.5 leading-relaxed">{badge.desc}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-[#1F242F] pt-2.5 flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase tracking-wider text-[#6B7280] font-mono">Status</span>
+                          {badge.earned ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E] flex items-center gap-1">
+                              <BadgeCheck className="w-3 h-3" /> Earned
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#9CA3AF]/10 border border-[#1F242F] text-[#9CA3AF] flex items-center gap-1">
+                              <ShieldAlert className="w-3 h-3" /> Locked
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-col gap-1 mt-1">
+                          <span className="text-[10px] uppercase tracking-wider text-[#6B7280] font-mono font-semibold">Unlock Requirement</span>
+                          <p className="text-xs text-[#3B82F6] font-medium leading-normal bg-[#0F1115] border border-[#1F242F] p-2.5 rounded-md">
+                            {badge.requirement}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               ))}
             </div>
           </div>
 
           {/* Certificates List Section */}
-          <div className="bg-[#171A21] border border-[#1F242F] p-6 rounded-lg flex flex-col gap-4">
+          <div id="earned-certificates-section" className="bg-[#171A21] border border-[#1F242F] p-6 rounded-lg flex flex-col gap-4">
             <h3 className="font-bold text-lg text-[#F3F4F6] flex items-center gap-2">
               <FileText className="w-5 h-5 text-[#3B82F6]" /> Earned Certificates
             </h3>
@@ -440,85 +603,116 @@ export default function ProfilePage({ onShowToast }) {
 
       {/* Certificate Modal */}
       {activeCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F1115]/80 p-4 animate-fadeIn">
-          <div className="relative w-full max-w-2xl bg-[#171A21] border border-[#1F242F] rounded-lg p-8 md:p-12 shadow-lg flex flex-col items-center text-center gap-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F1115]/80 p-4 overflow-y-auto animate-fadeIn">
+          <div className="relative w-full max-w-2xl flex flex-col gap-4">
             
-            {/* Close Button */}
-            <button
-              onClick={() => setActiveCert(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-md border border-[#1F242F] hover:border-[#EF4444]/30 bg-[#0F1115] text-[#9CA3AF] hover:text-[#EF4444] transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Accent border frame line */}
-            <div className="absolute inset-4 border border-[#3B82F6]/30 rounded pointer-events-none"></div>
-
-            {/* Logo */}
-            <div className="text-sm font-extrabold text-[#3B82F6] tracking-widest uppercase">
-              CYBER<span className="text-[#F3F4F6]">QUEST</span>
+            {/* External Controls Top Bar */}
+            <div className="flex justify-between items-center px-1">
+              <span className="text-xs font-mono font-bold text-[#6B7280] tracking-wider">CREDENTIAL PREVIEW</span>
+              <button
+                onClick={() => setActiveCert(null)}
+                className="p-1.5 rounded-md border border-[#1F242F] hover:border-[#EF4444]/30 bg-[#171A21] text-[#9CA3AF] hover:text-[#EF4444] transition-colors cursor-pointer focus:outline-none"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Main Header */}
-            <div className="flex flex-col gap-1 mt-2">
-              <h3 className="text-xl md:text-2xl font-black text-[#F3F4F6] tracking-tight">
-                CERTIFICATE OF COMPLETION
-              </h3>
-              <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest font-mono">
-                Defensive Cybersecurity Training
+            {/* Certificate Document (Self-contained credential card) */}
+            <div className="relative w-full bg-[#171A21] border border-[#1F242F] rounded-lg p-8 md:p-12 shadow-2xl flex flex-col items-center text-center gap-6 overflow-hidden">
+              {/* Accent border frame line */}
+              <div className="absolute inset-4 border border-[#3B82F6]/30 rounded pointer-events-none"></div>
+
+              {/* Logo & Seal */}
+              <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 border-b border-[#1F242F]/60 pb-4">
+                <div className="text-sm font-extrabold text-[#3B82F6] tracking-widest uppercase">
+                  CYBER<span className="text-[#F3F4F6]">QUEST</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#22C55E]/30 bg-[#22C55E]/5 text-[#22C55E] text-[10px] font-mono uppercase tracking-wider font-semibold">
+                  <BadgeCheck className="w-3.5 h-3.5" /> CYBERQUEST VERIFIED
+                </div>
+              </div>
+
+              {/* Main Header */}
+              <div className="flex flex-col gap-1 mt-2">
+                <h3 className="text-xs text-[#9CA3AF] uppercase tracking-widest font-mono font-semibold">
+                  Certificate of Completion
+                </h3>
+              </div>
+
+              {/* Awarded To */}
+              <div className="flex flex-col gap-1 mt-2">
+                <span className="text-xs text-[#9CA3AF] italic font-serif">
+                  This certificate is proudly awarded to
+                </span>
+              </div>
+
+              {/* Learner Name (Largest visual element, Solid White) */}
+              <div className="mt-1">
+                <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-wide uppercase">
+                  {userProfile?.displayName || user?.displayName || 'Cyber Cadet'}
+                </h2>
+              </div>
+
+              {/* Professional Statement */}
+              <p className="text-xs text-[#9CA3AF] max-w-md mx-auto leading-relaxed mt-1">
+                has met all required standards and successfully demonstrated proficiency in the curriculum of
               </p>
-            </div>
 
-            {/* Awarded To */}
-            <div className="flex flex-col gap-2 mt-4">
-              <span className="text-xs text-[#9CA3AF] italic">
-                This certificate is proudly awarded to
-              </span>
-              <span className="text-2xl font-bold text-[#F3F4F6] border-b border-[#1F242F] pb-2 px-8 min-w-[200px]">
-                {userProfile?.displayName || user?.displayName || 'Cyber Cadet'}
-              </span>
-            </div>
-
-            {/* Module Completed */}
-            <div className="flex flex-col gap-1.5 mt-2">
-              <span className="text-xs text-[#9CA3AF]">
-                for successfully completing the training path
-              </span>
-              <span className="text-lg font-bold text-[#3B82F6]">
-                {activeCert.module}
-              </span>
-            </div>
-
-            {/* Score */}
-            <div className="text-xs font-semibold px-3 py-1 rounded bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E] font-mono mt-1">
-              Score: {activeCert.score} / 10
-            </div>
-
-            {/* Metadata (Date & Prominent Certificate ID) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-t border-[#1F242F] pt-6 mt-4 text-left font-mono text-[11px] text-[#9CA3AF]">
-              <div>
-                <span className="text-[#6B7280] block text-[9px] uppercase tracking-wider">Date Issued</span>
-                <span className="text-[#F3F4F6]">
-                  {new Date(activeCert.issuedAt).toLocaleDateString(undefined, { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </span>
+              {/* Module Completed (Accent-colored element, prominent but de-emphasized size text-lg md:text-xl) */}
+              <div className="mt-1">
+                <h1 className="text-lg md:text-xl font-bold text-[#3B82F6] uppercase tracking-tight">
+                  {activeCert.module}
+                </h1>
               </div>
-              <div className="md:text-right">
-                <span className="text-[#6B7280] block text-[9px] uppercase tracking-wider font-mono">Verification Code</span>
-                <span className="text-[#3B82F6] font-bold tracking-wider">
-                  {activeCert.id}
+
+              {/* Achievement Summary Panel (Score & Status) */}
+              <div className="w-full bg-[#0F1115] border border-[#1F242F] rounded-lg p-4 grid grid-cols-2 gap-4 text-center max-w-md mt-2">
+                <div className="border-r border-[#1F242F]">
+                  <span className="text-[10px] uppercase tracking-wider text-[#6B7280] font-mono block">Final Score</span>
+                  <span className="text-sm font-bold font-mono text-[#22C55E]">{activeCert.score} / 10</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#6B7280] font-mono block">Path Status</span>
+                  <span className="text-sm font-bold font-mono text-[#3B82F6]">SECURE</span>
+                </div>
+              </div>
+
+              {/* Subtle Certification Seal near lower section */}
+              <div className="flex flex-col items-center justify-center border border-[#22C55E]/30 bg-[#22C55E]/5 rounded-full w-20 h-20 mt-2 select-none">
+                <BadgeCheck className="w-6 h-6 text-[#22C55E]" />
+                <span className="text-[7px] font-mono font-bold tracking-wider text-[#22C55E] mt-0.5 text-center leading-none">
+                  CYBERQUEST<br />VERIFIED
                 </span>
+                <span className="text-[8px] font-mono font-bold text-[#9CA3AF] mt-0.5">{new Date(activeCert.issuedAt).getFullYear()}</span>
+              </div>
+
+              {/* Metadata (Date & Prominent Certificate ID) */}
+              <div className="grid grid-cols-2 gap-4 w-full border-t border-[#1F242F] pt-6 mt-4 text-left font-mono text-[11px] text-[#9CA3AF]">
+                <div>
+                  <span className="text-[#6B7280] block text-[9px] uppercase tracking-wider">Date Issued</span>
+                  <span className="text-[#F3F4F6]">
+                    {new Date(activeCert.issuedAt).toLocaleDateString(undefined, { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[#6B7280] block text-[9px] uppercase tracking-widest font-mono font-semibold">Verification Code</span>
+                  <span className="text-[#3B82F6] font-mono text-xs font-bold tracking-widest mt-1 block">
+                    {activeCert.id}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Download Action */}
-            <div className="flex gap-3 mt-6 w-full justify-center">
+            {/* External Download Action (Separated below the card) */}
+            <div className="flex justify-center w-full">
               <button
                 onClick={() => handleDownloadPNG(activeCert)}
-                className="inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-5 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer shadow-sm hover:shadow-md"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-5 py-3 rounded-md text-sm font-semibold transition-all cursor-pointer shadow-lg hover:shadow-xl border border-[#3B82F6]/10"
               >
                 <Download className="w-4 h-4" /> Download Certificate PNG
               </button>

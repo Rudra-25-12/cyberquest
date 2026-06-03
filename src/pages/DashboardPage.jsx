@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useAuth, calculateLevelProgress } from '../context/AuthContext';
+import { toast } from 'sonner';
 import { Award, BookOpen, Lock, ShieldCheck, Zap, Key, Eye, Sparkles, Trophy, Percent, CheckSquare, ArrowRight, Clock } from 'lucide-react';
 import { getStorageKey } from '../utils/storage';
 
@@ -8,7 +9,7 @@ import { getStorageKey } from '../utils/storage';
  * @param {Object} props
  * @param {function(string):void} props.onNavigate - Page router utility
  */
-export default function DashboardPage({ onNavigate, onShowToast }) {
+export default function DashboardPage({ onNavigate }) {
   const { user, userProfile } = useAuth();
   const xp = userProfile?.xp || 0;
   const { level, maxXp, percent } = calculateLevelProgress(xp);
@@ -561,8 +562,8 @@ export default function DashboardPage({ onNavigate, onShowToast }) {
                           onNavigate('ai-challenge-lab');
                         } else if (track.id === 'owasp') {
                           onNavigate('owasp');
-                        } else if (onShowToast) {
-                          onShowToast("Lab loading...", "info");
+                        } else {
+                          toast.info("Lab loading...");
                         }
                       }}
                       className="w-full px-4 py-2 text-sm font-semibold rounded bg-[#3B82F6] hover:bg-[#2563EB] text-white transition-all cursor-pointer shadow-sm hover:shadow-md text-center block"

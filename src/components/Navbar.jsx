@@ -1,26 +1,33 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 import { Shield, Menu, X, LogOut, User, LayoutDashboard, Terminal, Mail, ShieldCheck, Sparkles, Key } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from './ui/DropdownMenu';
 
 /**
  * Navbar Component.
  * @param {Object} props
  * @param {string} props.currentView - The current route state ('dashboard' | 'profile')
  * @param {function(string):void} props.onNavigate - Navigation route updater
- * @param {function(string, string):void} props.onShowToast - Toast trigger callback
  */
-export default function Navbar({ currentView, onNavigate, onShowToast }) {
+export default function Navbar({ currentView, onNavigate }) {
   const { user, userProfile, logout, isFallbackMode } = useAuth();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       await logout();
-      onShowToast('Logged out successfully.', 'info');
+      toast.info('Logged out successfully.');
     } catch (err) {
       console.error(err);
-      onShowToast('Failed to log out.', 'error');
+      toast.error('Failed to log out.');
     }
   };
 
@@ -88,55 +95,90 @@ export default function Navbar({ currentView, onNavigate, onShowToast }) {
             )}
 
             {/* User Dropdown Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#171A21] focus:ring-[#3B82F6] cursor-pointer"
-              >
-                <img
-                  className="h-8 w-8 rounded-full border border-[#1F242F] object-cover"
-                  src={user?.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback'}
-                  alt={user?.displayName || 'Avatar'}
-                  onError={(e) => {
-                    e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=avatar';
-                  }}
-                />
-              </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#171A21] focus:ring-[#3B82F6] cursor-pointer"
+                >
+                  <img
+                    className="h-8 w-8 rounded-full border border-[#1F242F] object-cover"
+                    src={user?.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback'}
+                    alt={user?.displayName || 'Avatar'}
+                    onError={(e) => {
+                      e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=avatar';
+                    }}
+                  />
+                </button>
+              </DropdownMenuTrigger>
 
-              {dropdownOpen && (
-                <>
-                  {/* Backdrop overlay for closing */}
-                  <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)}></div>
-                  
-                  <div className="absolute right-0 mt-2 w-48 rounded-md bg-[#171A21] border border-[#1F242F] shadow-lg py-1 z-20 origin-top-right">
-                    <div className="px-4 py-2 border-b border-[#1F242F] text-xs">
-                      <p className="font-semibold text-[#F3F4F6] truncate">{userProfile?.displayName || user?.displayName}</p>
-                      <p className="text-[#9CA3AF] truncate mt-0.5">{user?.email}</p>
+              <DropdownMenuContent className="w-[260px] mt-2" align="end">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex items-center gap-3 px-1 py-1.5 text-xs">
+                    <img
+                      className="h-9 w-9 rounded-full border border-[#1F242F] object-cover flex-shrink-0"
+                      src={user?.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback'}
+                      alt="Avatar"
+                      onError={(e) => {
+                        e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=avatar';
+                      }}
+                    />
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="font-semibold text-[#F3F4F6] truncate">
+                        {userProfile?.displayName || user?.displayName}
+                      </span>
+                      <span className="text-[#9CA3AF] truncate mt-0.5" title={user?.email}>
+                        {user?.email}
+                      </span>
                     </div>
-                    <button
-                      onClick={() => {
-                        onNavigate('profile');
-                        setDropdownOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-[#242936] text-left transition-colors cursor-pointer"
-                    >
-                      <User className="w-4 h-4" />
-                      Your Profile
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setDropdownOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#EF4444] hover:bg-[#EF4444]/10 text-left transition-colors cursor-pointer border-t border-[#1F242F]"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
                   </div>
-                </>
-              )}
-            </div>
+                </DropdownMenuLabel>
+                
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem
+                  onSelect={() => {
+                    onNavigate('profile');
+                  }}
+                  className="gap-2"
+                >
+                  <span className="text-base select-none">👤</span>
+                  <span>Profile</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onSelect={() => {
+                    localStorage.setItem('cyberquest_scroll_to_certificates', 'true');
+                    onNavigate('profile');
+                  }}
+                  className="gap-2"
+                >
+                  <span className="text-base select-none">📜</span>
+                  <span>Certificates</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onSelect={() => {
+                    onNavigate('dashboard');
+                  }}
+                  className="gap-2"
+                >
+                  <span className="text-base select-none">📊</span>
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onSelect={() => {
+                    handleLogout();
+                  }}
+                  className="gap-2 text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10 focus:text-[#EF4444] focus:bg-[#EF4444]/10"
+                >
+                  <span className="text-base select-none">🚪</span>
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile hamburger menu toggle */}

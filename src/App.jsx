@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import Navbar from './components/Navbar';
-import Toast from './components/Toast';
+import { Toaster, toast } from 'sonner';
 import { Shield } from 'lucide-react';
 
 const PhishingDetectivePage = lazy(() => import('./pages/PhishingDetectivePage'));
@@ -43,12 +43,6 @@ function AppContent() {
     }
     return 'dashboard';
   });
-  const [toast, setToast] = useState(null);
-
-  // Helper to trigger floating toast alerts
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-  };
 
   const handleNavigate = (view) => {
     console.log("[App] currentView before transition:", currentView);
@@ -65,7 +59,7 @@ function AppContent() {
   // Trigger toast alert if auth/sync errors occur
   useEffect(() => {
     if (error) {
-      showToast(error, 'error');
+      toast.error(error);
     }
   }, [error]);
 
@@ -102,14 +96,7 @@ function AppContent() {
   if (!user) {
     return (
       <>
-        <LoginPage onShowToast={showToast} />
-        {toast && (
-          <Toast 
-            message={toast.message} 
-            type={toast.type} 
-            onClose={() => setToast(null)} 
-          />
-        )}
+        <LoginPage />
       </>
     );
   }
@@ -121,28 +108,27 @@ function AppContent() {
         <Navbar 
           currentView={currentView} 
           onNavigate={handleNavigate} 
-          onShowToast={showToast} 
         />
         
         <main className="pb-12">
           <Suspense fallback={<ModuleLoader />}>
             {currentView === 'dashboard' && (
-              <DashboardPage onNavigate={handleNavigate} onShowToast={showToast} />
+              <DashboardPage onNavigate={handleNavigate} />
             )}
             {currentView === 'phishing-detective' && (
-              <PhishingDetectivePage onShowToast={showToast} />
+              <PhishingDetectivePage />
             )}
             {currentView === 'security-fundamentals' && (
-              <SecurityFundamentalsPage onShowToast={showToast} />
+              <SecurityFundamentalsPage />
             )}
             {currentView === 'ai-challenge-lab' && (
-              <AiChallengeLabPage onShowToast={showToast} />
+              <AiChallengeLabPage />
             )}
             {currentView === 'owasp' && (
-              <OwaspPage onShowToast={showToast} />
+              <OwaspPage />
             )}
             {currentView === 'profile' && (
-              <ProfilePage onShowToast={showToast} />
+              <ProfilePage />
             )}
           </Suspense>
         </main>
@@ -158,15 +144,6 @@ function AppContent() {
           </div>
         </div>
       </footer>
-
-      {/* Floating Notifications */}
-      {toast && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast(null)} 
-        />
-      )}
     </div>
   );
 }
@@ -175,6 +152,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppContent />
+      <Toaster theme="dark" position="bottom-right" richColors closeButton />
     </AuthProvider>
   );
 }
