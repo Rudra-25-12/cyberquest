@@ -1,7 +1,104 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth, calculateLevelProgress } from '../context/AuthContext';
 import { Award, Mail, Calendar, User, Save, ShieldAlert, BadgeCheck, FileText, Download, Eye, X } from 'lucide-react';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '../components/ui/HoverCard';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
+import { Progress } from '../components/ui/Progress';
+
+/**
+ * Reusable Certificate Template Component (Single Source of Truth).
+ */
+function CertificateTemplate({ cert, userProfile, isExport = false }) {
+  const dateFormatted = new Date(cert.issuedAt).toLocaleDateString(undefined, { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
+  return (
+    <div 
+      className={`relative w-full bg-[#171A21] border border-[#1F242F] rounded-lg flex flex-col items-center justify-between text-center overflow-hidden font-sans select-none
+        ${isExport ? 'p-12 h-full' : 'p-6 sm:p-8 aspect-[4/3] max-h-[50vh] sm:max-h-[55vh] md:max-h-[60vh]'}`}
+      style={isExport ? { width: '1200px', height: '900px' } : {}}
+    >
+      {/* Accent border frame line */}
+      <div className={`absolute border border-[#3B82F6]/30 rounded pointer-events-none ${isExport ? 'inset-6' : 'inset-3 sm:inset-4'}`}></div>
+
+      {/* Logo & Seal Top Row */}
+      <div className="flex items-center justify-between w-full border-b border-[#1F242F]/60 pb-3 z-10">
+        <div className={`font-extrabold text-[#3B82F6] tracking-widest uppercase ${isExport ? 'text-lg' : 'text-xs sm:text-sm'}`}>
+          CYBER<span className="text-[#F3F4F6]">QUEST</span>
+        </div>
+        <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-[#22C55E]/15 bg-[#22C55E]/2 text-[#22C55E] font-mono uppercase tracking-wider font-medium ${isExport ? 'text-[10px]' : 'text-[8px] sm:text-[9px]'}`}>
+          <BadgeCheck className={isExport ? 'w-3.5 h-3.5' : 'w-2.5 h-2.5 sm:w-3 sm:h-3'} /> CYBERQUEST VERIFIED
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="flex flex-col gap-1 z-10">
+        <h3 className={`text-[#9CA3AF] uppercase tracking-widest font-mono font-semibold ${isExport ? 'text-sm' : 'text-[9px] sm:text-[10px]'}`}>
+          Certificate of Completion
+        </h3>
+        <span className={`text-[#9CA3AF] italic font-serif ${isExport ? 'text-base' : 'text-[10px] sm:text-xs'}`}>
+          This certificate is proudly awarded to
+        </span>
+      </div>
+
+      {/* Learner Name */}
+      <div className="z-10">
+        <h2 className={`font-extrabold text-white tracking-wide uppercase ${isExport ? 'text-4xl mt-2' : 'text-xl sm:text-2xl md:text-3xl'}`}>
+          {userProfile?.displayName || 'Cyber Cadet'}
+        </h2>
+      </div>
+
+      {/* Professional Statement */}
+      <p className={`text-[#9CA3AF] max-w-md mx-auto leading-relaxed z-10 ${isExport ? 'text-sm px-6' : 'text-[9px] sm:text-[10px] px-2'}`}>
+        has met all required standards and successfully demonstrated proficiency in the curriculum of
+      </p>
+
+      {/* Module Completed */}
+      <div className="z-10">
+        <h1 className={`font-bold text-[#3B82F6] uppercase tracking-tight ${isExport ? 'text-2xl' : 'text-sm sm:text-base md:text-lg'}`}>
+          {cert.module}
+        </h1>
+      </div>
+
+      {/* Score & Status Panel */}
+      <div className={`w-full bg-[#0F1115] border border-[#1F242F] rounded-lg grid grid-cols-2 text-center max-w-md z-10 ${isExport ? 'p-4 gap-4' : 'p-2 sm:p-3 gap-2 sm:gap-4'}`}>
+        <div className="border-r border-[#1F242F]">
+          <span className={`uppercase tracking-wider text-[#6B7280] font-mono block ${isExport ? 'text-xs' : 'text-[8px] sm:text-[9px]'}`}>Final Score</span>
+          <span className={`font-bold font-mono text-[#22C55E] ${isExport ? 'text-xl' : 'text-xs sm:text-sm'}`}>{cert.score} / 10</span>
+        </div>
+        <div>
+          <span className={`uppercase tracking-wider text-[#6B7280] font-mono block ${isExport ? 'text-xs' : 'text-[8px] sm:text-[9px]'}`}>Path Status</span>
+          <span className={`font-bold font-mono text-[#3B82F6] ${isExport ? 'text-xl' : 'text-xs sm:text-sm'}`}>SECURE</span>
+        </div>
+      </div>
+
+      {/* Subtle Certification Seal */}
+      <div className={`flex flex-col items-center justify-center border border-[#22C55E]/30 bg-[#22C55E]/5 rounded-full select-none z-10
+        ${isExport ? 'w-24 h-24' : 'w-14 h-14 sm:w-16 sm:h-16'}`}>
+        <BadgeCheck className={`text-[#22C55E] ${isExport ? 'w-8 h-8' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
+        <span className={`font-mono font-bold tracking-wider text-[#22C55E] text-center leading-none ${isExport ? 'text-[8px] mt-1' : 'text-[6px] mt-0.5'}`}>
+          CYBERQUEST<br />VERIFIED
+        </span>
+      </div>
+
+      {/* Metadata */}
+      <div className={`grid grid-cols-2 gap-4 w-full border-t border-[#1F242F] z-10 text-left font-mono text-[#9CA3AF] ${isExport ? 'pt-4 text-xs' : 'pt-2 text-[8px] sm:text-[9px]'}`}>
+        <div>
+          <span className="text-[#6B7280] block uppercase tracking-wider font-semibold">Date Issued</span>
+          <span className="text-[#F3F4F6] block">{dateFormatted}</span>
+        </div>
+        <div className="text-right">
+          <span className="text-[#6B7280] block uppercase tracking-wider font-semibold">Certificate ID</span>
+          <span className="text-[#3B82F6] font-bold tracking-wider block">{cert.id}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * ProfilePage Component.
@@ -14,6 +111,8 @@ export default function ProfilePage({ onShowToast }) {
   const [bio, setBio] = useState(userProfile?.bio || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeCert, setActiveCert] = useState(null);
+  const [exportCert, setExportCert] = useState(null);
+  const exportRef = useRef(null);
 
   useEffect(() => {
     const scrollToCertificates = localStorage.getItem('cyberquest_scroll_to_certificates');
@@ -26,190 +125,52 @@ export default function ProfilePage({ onShowToast }) {
     }
   }, []);
 
-  const handleDownloadPNG = (cert) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1600;
-    canvas.height = 1200;
-    const ctx = canvas.getContext('2d');
-
-    // Fill background: dark slate (#0F1115)
-    ctx.fillStyle = '#0F1115';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw inner card: #171A21
-    ctx.fillStyle = '#171A21';
-    ctx.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
-
-    // Draw border: #1F242F
-    ctx.strokeStyle = '#1F242F';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
-
-    // Draw frame: #3B82F6
-    ctx.strokeStyle = '#3B82F6';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(80, 80, canvas.width - 160, canvas.height - 160);
-
-    // 1. Logo (CYBERQUEST)
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#3B82F6';
-    ctx.font = 'bold 32px sans-serif';
-    ctx.fillText('CYBERQUEST', canvas.width / 2, 160);
-
-    // 2. Certificate of Completion Title
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = 'bold 24px monospace';
-    ctx.fillText('CERTIFICATE OF COMPLETION', canvas.width / 2, 230);
-
-    // 3. Awarded to Statement
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = 'italic 22px Georgia, serif';
-    ctx.fillText('This certificate is proudly awarded to', canvas.width / 2, 320);
-
-    // 4. Learner Name (Largest visual element, Solid White)
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 68px sans-serif';
-    ctx.fillText(userProfile?.displayName || user?.displayName || 'Cyber Cadet', canvas.width / 2, 420);
-
-    // 5. Professional Certification Statement
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = '22px sans-serif';
-    ctx.fillText('has met all required standards and successfully demonstrated proficiency in the curriculum of', canvas.width / 2, 530);
-
-    // 6. Module Name (Accent-colored element, prominent but de-emphasized size)
-    ctx.fillStyle = '#3B82F6';
-    ctx.font = 'bold 46px sans-serif';
-    ctx.fillText(cert.module.toUpperCase(), canvas.width / 2, 620);
-
-    // 7. Achievement Summary Panel Box
-    const boxWidth = 520;
-    const boxHeight = 110;
-    const boxX = (canvas.width - boxWidth) / 2;
-    const boxY = 700;
-
-    // Draw Box Background
-    ctx.fillStyle = '#0F1115';
-    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+  const triggerExport = async (cert, format) => {
+    setExportCert(cert);
     
-    // Draw Box Border
-    ctx.strokeStyle = '#1F242F';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+    // Give React time to render the off-screen DOM element
+    setTimeout(async () => {
+      try {
+        const element = exportRef.current;
+        if (!element) {
+          console.error("Export element not found");
+          return;
+        }
 
-    // Draw Box Divider Line
-    ctx.strokeStyle = '#1F242F';
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, boxY);
-    ctx.lineTo(canvas.width / 2, boxY + boxHeight);
-    ctx.stroke();
+        // Capture with high pixelRatio for 200% zoom crispness
+        const dataUrl = await toPng(element, {
+          quality: 1.0,
+          pixelRatio: 2, // 1200x900 base becomes 2400x1800 for high resolution
+          style: {
+            transform: 'none',
+            opacity: '1',
+            visibility: 'visible'
+          }
+        });
 
-    // Draw Left Half (Final Score)
-    ctx.fillStyle = '#6B7280';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('FINAL SCORE', boxX + boxWidth / 4, boxY + 30);
-    ctx.fillStyle = '#22C55E';
-    ctx.font = 'bold 30px monospace';
-    ctx.fillText(`${cert.score} / 10`, boxX + boxWidth / 4, boxY + 70);
-
-    // Draw Right Half (Path Status)
-    ctx.fillStyle = '#6B7280';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('PATH STATUS', boxX + (boxWidth * 3) / 4, boxY + 30);
-    ctx.fillStyle = '#3B82F6';
-    ctx.font = 'bold 30px monospace';
-    ctx.fillText('SECURE', boxX + (boxWidth * 3) / 4, boxY + 70);
-
-    // 8. CyberQuest Verified Badge stamp on the bottom-right quadrant
-    const sealX = 1360;
-    const sealY = 755;
-    
-    ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(sealX, sealY, 70, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.arc(sealX, sealY, 62, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    ctx.fillStyle = '#22C55E';
-    ctx.font = 'bold 14px monospace';
-    ctx.fillText('CYBERQUEST', sealX, sealY - 15);
-    ctx.fillText('VERIFIED', sealX, sealY + 15);
-
-    // 9. Subtle centered Certification Seal near lower section
-    const centerSealX = 800;
-    const centerSealY = 900;
-    ctx.strokeStyle = 'rgba(34, 197, 94, 0.25)';
-    ctx.lineWidth = 2;
-    
-    // Outer circle
-    ctx.beginPath();
-    ctx.arc(centerSealX, centerSealY, 56, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    // Inner circle
-    ctx.beginPath();
-    ctx.arc(centerSealX, centerSealY, 50, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.fillStyle = '#22C55E';
-    ctx.font = 'bold 11px monospace';
-    ctx.fillText('CYBERQUEST', centerSealX, centerSealY - 18);
-    ctx.fillText('VERIFIED', centerSealX, centerSealY + 2);
-    
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = 'bold 11px monospace';
-    ctx.fillText(new Date(cert.issuedAt).getFullYear().toString(), centerSealX, centerSealY + 22);
-
-    // 10. Left Side Metadata columns (Date Issued, Certificate ID)
-    const dateFormatted = new Date(cert.issuedAt).toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#6B7280';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('DATE ISSUED', 150, 940);
-    ctx.fillStyle = '#F3F4F6';
-    ctx.font = '22px monospace';
-    ctx.fillText(dateFormatted, 150, 975);
-
-    ctx.fillStyle = '#6B7280';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('CERTIFICATE ID', 150, 1035);
-    ctx.fillStyle = '#F3F4F6';
-    ctx.font = '22px monospace';
-    ctx.fillText(cert.id, 150, 1070);
-
-    // 11. Right Side Metadata columns (Verification Code, Verification URL)
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#6B7280';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('VERIFICATION CODE', 1450, 940);
-    ctx.fillStyle = '#3B82F6';
-    ctx.font = 'bold 22px monospace';
-    ctx.fillText(cert.id, 1450, 975);
-
-    ctx.fillStyle = '#6B7280';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('VERIFICATION LINK', 1450, 1035);
-    ctx.fillStyle = '#3B82F6';
-    ctx.font = '22px monospace';
-    ctx.fillText('cyberquest.verify', 1450, 1070);
-
-    // Export as download
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Certificate_${cert.module.replace(/\s+/g, '_')}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+        if (format === 'png') {
+          const a = document.createElement('a');
+          a.href = dataUrl;
+          a.download = `Certificate_${cert.module.replace(/\s+/g, '_')}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else if (format === 'pdf') {
+          const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [2400, 1800],
+            compress: true
+          });
+          pdf.addImage(dataUrl, 'PNG', 0, 0, 2400, 1800, undefined, 'FAST');
+          pdf.save(`Certificate_${cert.module.replace(/\s+/g, '_')}.pdf`);
+        }
+      } catch (error) {
+        console.error("Failed to generate export file:", error);
+      } finally {
+        setExportCert(null);
+      }
+    }, 200);
   };
 
   const xp = userProfile?.xp || 0;
@@ -379,27 +340,35 @@ export default function ProfilePage({ onShowToast }) {
           </div>
 
           {/* XP Progress Card */}
-          <div className="bg-[#171A21] border border-[#1F242F] p-6 rounded-lg flex flex-col gap-4">
-            <h3 className="text-xs font-bold text-[#9CA3AF] uppercase tracking-wider">Level Progress</h3>
-            <div className="flex justify-between items-baseline">
+          <div className="bg-gradient-to-br from-[#1E2330] to-[#171A21] border border-[#3B82F6]/30 p-6 rounded-lg flex flex-col gap-4 shadow-[0_4px_20px_-2px_rgba(59,130,246,0.15)] ring-1 ring-[#3B82F6]/10 relative overflow-hidden group hover:border-[#3B82F6]/50 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#3B82F6]/5 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="flex justify-between items-center z-10">
+              <h3 className="text-xs font-bold text-[#3B82F6] uppercase tracking-wider">Level Progress</h3>
+              <span className="text-xs font-extrabold text-[#3B82F6] font-mono">{percent}% completed</span>
+            </div>
+            <div className="flex justify-between items-baseline z-10 mt-1">
               <span className="text-lg font-bold text-[#F3F4F6]">Level {level}</span>
               <span className="text-xs text-[#9CA3AF] font-mono">{xp} / {maxXp} XP</span>
             </div>
-            <div className="w-full bg-[#0F1115] h-2 rounded-full overflow-hidden border border-[#1F242F]">
-              <div 
-                className="bg-[#3B82F6] h-full rounded-full transition-all duration-500" 
-                style={{ width: `${percent}%` }}
-              ></div>
+            
+            {/* Reusable Progress bar */}
+            <Progress 
+              value={percent} 
+              className="h-3 shadow-[0_0_12px_rgba(59,130,246,0.1)] z-10" 
+              indicatorClassName="bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] shadow-[0_0_8px_rgba(6,182,212,0.6)]" 
+            />
+
+            <div className="text-[10px] text-[#9CA3AF] font-medium leading-normal border-t border-[#1F242F] pt-2 mt-1 z-10">
+              {level < 5 ? (
+                <span className="flex items-center gap-1">
+                  <span className="text-[#3B82F6] font-semibold">{maxXp - xp} XP</span> remaining to reach Level {level + 1}
+                </span>
+              ) : (
+                <span className="text-[10px] text-[#22C55E] font-semibold">
+                  Maximum Level Achieved!
+                </span>
+              )}
             </div>
-            {level < 5 ? (
-              <span className="text-[10px] text-[#9CA3AF]">
-                Earn {maxXp - xp} more XP to reach Level {level + 1}
-              </span>
-            ) : (
-              <span className="text-[10px] text-[#22C55E] font-semibold">
-                Maximum Level Achieved!
-              </span>
-            )}
           </div>
         </div>
 
@@ -578,7 +547,7 @@ export default function ProfilePage({ onShowToast }) {
                         <Eye className="w-3.5 h-3.5" /> View
                       </button>
                       <button
-                        onClick={() => handleDownloadPNG(cert)}
+                        onClick={() => triggerExport(cert, 'png')}
                         className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-md border border-[#1F242F] hover:border-[#3B82F6]/30 bg-[#0F1115] text-[11px] font-semibold text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5" /> Download
@@ -603,12 +572,11 @@ export default function ProfilePage({ onShowToast }) {
 
       {/* Certificate Modal */}
       {activeCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F1115]/80 p-4 overflow-y-auto animate-fadeIn">
-          <div className="relative w-full max-w-2xl flex flex-col gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F1115]/90 p-4 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+          <div className="relative w-full max-w-2xl flex flex-col gap-3 max-h-[95vh] justify-between">
             
             {/* External Controls Top Bar */}
-            <div className="flex justify-between items-center px-1">
-              <span className="text-xs font-mono font-bold text-[#6B7280] tracking-wider">CREDENTIAL PREVIEW</span>
+            <div className="flex justify-end items-center px-1 flex-shrink-0">
               <button
                 onClick={() => setActiveCert(null)}
                 className="p-1.5 rounded-md border border-[#1F242F] hover:border-[#EF4444]/30 bg-[#171A21] text-[#9CA3AF] hover:text-[#EF4444] transition-colors cursor-pointer focus:outline-none"
@@ -618,106 +586,36 @@ export default function ProfilePage({ onShowToast }) {
               </button>
             </div>
 
-            {/* Certificate Document (Self-contained credential card) */}
-            <div className="relative w-full bg-[#171A21] border border-[#1F242F] rounded-lg p-8 md:p-12 shadow-2xl flex flex-col items-center text-center gap-6 overflow-hidden">
-              {/* Accent border frame line */}
-              <div className="absolute inset-4 border border-[#3B82F6]/30 rounded pointer-events-none"></div>
-
-              {/* Logo & Seal */}
-              <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 border-b border-[#1F242F]/60 pb-4">
-                <div className="text-sm font-extrabold text-[#3B82F6] tracking-widest uppercase">
-                  CYBER<span className="text-[#F3F4F6]">QUEST</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#22C55E]/30 bg-[#22C55E]/5 text-[#22C55E] text-[10px] font-mono uppercase tracking-wider font-semibold">
-                  <BadgeCheck className="w-3.5 h-3.5" /> CYBERQUEST VERIFIED
-                </div>
-              </div>
-
-              {/* Main Header */}
-              <div className="flex flex-col gap-1 mt-2">
-                <h3 className="text-xs text-[#9CA3AF] uppercase tracking-widest font-mono font-semibold">
-                  Certificate of Completion
-                </h3>
-              </div>
-
-              {/* Awarded To */}
-              <div className="flex flex-col gap-1 mt-2">
-                <span className="text-xs text-[#9CA3AF] italic font-serif">
-                  This certificate is proudly awarded to
-                </span>
-              </div>
-
-              {/* Learner Name (Largest visual element, Solid White) */}
-              <div className="mt-1">
-                <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-wide uppercase">
-                  {userProfile?.displayName || user?.displayName || 'Cyber Cadet'}
-                </h2>
-              </div>
-
-              {/* Professional Statement */}
-              <p className="text-xs text-[#9CA3AF] max-w-md mx-auto leading-relaxed mt-1">
-                has met all required standards and successfully demonstrated proficiency in the curriculum of
-              </p>
-
-              {/* Module Completed (Accent-colored element, prominent but de-emphasized size text-lg md:text-xl) */}
-              <div className="mt-1">
-                <h1 className="text-lg md:text-xl font-bold text-[#3B82F6] uppercase tracking-tight">
-                  {activeCert.module}
-                </h1>
-              </div>
-
-              {/* Achievement Summary Panel (Score & Status) */}
-              <div className="w-full bg-[#0F1115] border border-[#1F242F] rounded-lg p-4 grid grid-cols-2 gap-4 text-center max-w-md mt-2">
-                <div className="border-r border-[#1F242F]">
-                  <span className="text-[10px] uppercase tracking-wider text-[#6B7280] font-mono block">Final Score</span>
-                  <span className="text-sm font-bold font-mono text-[#22C55E]">{activeCert.score} / 10</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[#6B7280] font-mono block">Path Status</span>
-                  <span className="text-sm font-bold font-mono text-[#3B82F6]">SECURE</span>
-                </div>
-              </div>
-
-              {/* Subtle Certification Seal near lower section */}
-              <div className="flex flex-col items-center justify-center border border-[#22C55E]/30 bg-[#22C55E]/5 rounded-full w-20 h-20 mt-2 select-none">
-                <BadgeCheck className="w-6 h-6 text-[#22C55E]" />
-                <span className="text-[7px] font-mono font-bold tracking-wider text-[#22C55E] mt-0.5 text-center leading-none">
-                  CYBERQUEST<br />VERIFIED
-                </span>
-                <span className="text-[8px] font-mono font-bold text-[#9CA3AF] mt-0.5">{new Date(activeCert.issuedAt).getFullYear()}</span>
-              </div>
-
-              {/* Metadata (Date & Prominent Certificate ID) */}
-              <div className="grid grid-cols-2 gap-4 w-full border-t border-[#1F242F] pt-6 mt-4 text-left font-mono text-[11px] text-[#9CA3AF]">
-                <div>
-                  <span className="text-[#6B7280] block text-[9px] uppercase tracking-wider">Date Issued</span>
-                  <span className="text-[#F3F4F6]">
-                    {new Date(activeCert.issuedAt).toLocaleDateString(undefined, { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-[#6B7280] block text-[9px] uppercase tracking-widest font-mono font-semibold">Verification Code</span>
-                  <span className="text-[#3B82F6] font-mono text-xs font-bold tracking-widest mt-1 block">
-                    {activeCert.id}
-                  </span>
-                </div>
-              </div>
+            {/* Certificate Document (Self-contained responsive component) */}
+            <div className="flex-grow flex items-center justify-center min-h-0">
+              <CertificateTemplate cert={activeCert} userProfile={userProfile} isExport={false} />
             </div>
 
-            {/* External Download Action (Separated below the card) */}
-            <div className="flex justify-center w-full">
+            {/* External Download Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full flex-shrink-0 mt-2">
               <button
-                onClick={() => handleDownloadPNG(activeCert)}
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-5 py-3 rounded-md text-sm font-semibold transition-all cursor-pointer shadow-lg hover:shadow-xl border border-[#3B82F6]/10"
+                onClick={() => triggerExport(activeCert, 'png')}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer shadow-lg hover:shadow-xl border border-[#3B82F6]/10"
               >
-                <Download className="w-4 h-4" /> Download Certificate PNG
+                <Download className="w-4 h-4" /> Download PNG
+              </button>
+              <button
+                onClick={() => triggerExport(activeCert, 'pdf')}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer shadow-lg border border-[#1F242F]"
+              >
+                <Download className="w-4 h-4" /> Download PDF
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Hidden high-resolution container for exports */}
+      {exportCert && (
+        <div className="absolute left-[-9999px] top-[-9999px]" style={{ pointerEvents: 'none' }}>
+          <div ref={exportRef} style={{ width: '1200px', height: '900px', position: 'relative' }}>
+            <CertificateTemplate cert={exportCert} userProfile={userProfile} isExport={true} />
           </div>
         </div>
       )}

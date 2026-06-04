@@ -172,7 +172,7 @@ export default function PhishingDetectivePage() {
     if (!res) return;
 
     if (res.levelUp) {
-      toast.success(`Level Up! Level ${res.newLevel}`);
+      toast.success(`🎉 Level ${res.newLevel} Reached`);
     }
 
     if (res.badgesUnlocked && res.badgesUnlocked.length > 0) {
@@ -185,15 +185,18 @@ export default function PhishingDetectivePage() {
       res.badgesUnlocked.forEach((badge, index) => {
         const title = badgeTitles[badge] || badge;
         setTimeout(() => {
-          toast.success(`Badge Unlocked: ${title}`);
-        }, 1000 * (index + 1));
+          toast.success(`🏅 ${title} Unlocked`);
+        }, 800 * (index + 1));
       });
     }
 
     if (res.certificateEarned) {
       setTimeout(() => {
-        toast.success(`Certificate Earned: ${res.certificateEarned}`);
-      }, 1500);
+        toast.success(`✅ Module Completed`);
+      }, 1000);
+      setTimeout(() => {
+        toast.success(`📜 Certificate Earned`);
+      }, 1800);
     }
   };
 
