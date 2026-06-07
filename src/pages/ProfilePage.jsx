@@ -3,7 +3,7 @@ import { useAuth, calculateLevelProgress } from '../context/AuthContext';
 import { Award, Mail, Calendar, User, Save, ShieldAlert, BadgeCheck, FileText, Download, Eye, X, Trophy, BookOpen, Lock } from 'lucide-react';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '../components/ui/HoverCard';
 import { toPng } from 'html-to-image';
-import { jsPDF } from 'jsPDF';
+import { jsPDF } from 'jspdf';
 import { Progress } from '../components/ui/Progress';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../components/ui/Tooltip';
