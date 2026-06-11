@@ -890,6 +890,16 @@ export default function ProfilePage({ onShowToast }) {
                 >
                   <Download className="w-4 h-4" /> Download PDF
                 </button>
+                <button
+                  onClick={() => {
+                    setActiveCert(null);
+                    window.history.pushState(null, '', `/verify?id=${activeCert.id}`);
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#171A21] hover:bg-[#242936] text-[#22C55E] px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer border border-[#22C55E]/20"
+                >
+                  <BadgeCheck className="w-4 h-4" /> Verify Certificate
+                </button>
               </div>
 
             </div>

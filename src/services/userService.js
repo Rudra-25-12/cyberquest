@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 // Check if Firebase is configured with active keys and database is loaded
@@ -131,6 +131,59 @@ export const userService = {
       return updatedDoc.data();
     } catch (error) {
       console.error("Error in updateProfile:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Verifies a certificate ID by checking database records.
+   * Abstracted here so it can later migrate to check certificates/{certificateId} directly.
+   * @param {string} certificateId - The ID of the certificate.
+   * @returns {Promise<Object>} Verification result.
+   */
+  async verifyCertificate(certificateId) {
+    if (!certificateId) return { valid: false };
+
+    if (!isFirebaseConfigured) {
+      // Developer Fallback Mode: scan in-memory / local storage profiles
+      const localUsers = getLocalUsers();
+      for (const uid in localUsers) {
+        const userProfile = localUsers[uid];
+        const certs = userProfile.certificates || [];
+        const found = certs.find(c => c.id === certificateId);
+        if (found) {
+          return {
+            valid: true,
+            certificate: found,
+            learnerName: userProfile.displayName || 'Cyber Cadet',
+          };
+        }
+      }
+      return { valid: false };
+    }
+
+    // Real Firebase Firestore Mode
+    // Note: Scanning the 'users' collection is a temporary lookup mechanism.
+    // In a production app, certificates would be written to a top-level '/certificates'
+    // collection at the time of creation, allowing direct lookup: doc(db, 'certificates', certificateId).
+    try {
+      const usersColRef = collection(db, 'users');
+      const querySnapshot = await getDocs(usersColRef);
+      for (const docSnap of querySnapshot.docs) {
+        const userData = docSnap.data();
+        const certs = userData.certificates || [];
+        const found = certs.find(c => c.id === certificateId);
+        if (found) {
+          return {
+            valid: true,
+            certificate: found,
+            learnerName: userData.displayName || 'Cyber Cadet',
+          };
+        }
+      }
+      return { valid: false };
+    } catch (error) {
+      console.error("Error in verifyCertificate:", error);
       throw error;
     }
   }
