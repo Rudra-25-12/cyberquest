@@ -13,6 +13,7 @@ const AiChallengeLabPage = lazy(() => import('./pages/AiChallengeLabPage'));
 const OwaspPage = lazy(() => import('./pages/OwaspPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const VerificationPage = lazy(() => import('./pages/VerificationPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
 function ModuleLoader() {
   return (
@@ -37,8 +38,11 @@ function AppContent() {
       if (window.location.pathname === '/verify') {
         return 'verify';
       }
+      if (window.location.pathname === '/settings') {
+        return 'settings';
+      }
       const saved = localStorage.getItem('cyberquest_current_view');
-      const validViews = ['dashboard', 'phishing-detective', 'security-fundamentals', 'ai-challenge-lab', 'owasp', 'profile', 'verify'];
+      const validViews = ['dashboard', 'phishing-detective', 'security-fundamentals', 'ai-challenge-lab', 'owasp', 'profile', 'verify', 'settings'];
       if (saved && validViews.includes(saved)) {
         return saved;
       }
@@ -55,10 +59,12 @@ function AppContent() {
     console.log("[App] currentView after transition scheduled:", view);
     try {
       localStorage.setItem('cyberquest_current_view', view);
-      if (view !== 'verify' && window.location.pathname === '/verify') {
-        window.history.pushState(null, '', '/');
-      } else if (view === 'verify' && window.location.pathname !== '/verify') {
-        window.history.pushState(null, '', '/verify');
+      if (view === 'verify') {
+        if (window.location.pathname !== '/verify') window.history.pushState(null, '', '/verify');
+      } else if (view === 'settings') {
+        if (window.location.pathname !== '/settings') window.history.pushState(null, '', '/settings');
+      } else {
+        if (window.location.pathname !== '/') window.history.pushState(null, '', '/');
       }
     } catch (e) {
       console.error(e);
@@ -77,9 +83,11 @@ function AppContent() {
     const handlePopState = () => {
       if (window.location.pathname === '/verify') {
         setCurrentView('verify');
+      } else if (window.location.pathname === '/settings') {
+        setCurrentView('settings');
       } else {
         const saved = localStorage.getItem('cyberquest_current_view');
-        const validViews = ['dashboard', 'phishing-detective', 'security-fundamentals', 'ai-challenge-lab', 'owasp', 'profile'];
+        const validViews = ['dashboard', 'phishing-detective', 'security-fundamentals', 'ai-challenge-lab', 'owasp', 'profile', 'verify', 'settings'];
         if (saved && validViews.includes(saved)) {
           setCurrentView(saved);
         } else {
@@ -160,8 +168,8 @@ function AppContent() {
               <div className="flex gap-4">
                 <a href="/" className="hover:text-[#F3F4F6] transition-colors">Platform</a>
                 <a href="/verify" className="hover:text-[#F3F4F6] transition-colors">Verify Certificate</a>
-                <a href="#" className="hover:text-[#F3F4F6] transition-colors">Documentation</a>
-                <a href="#" className="hover:text-[#F3F4F6] transition-colors">Support</a>
+                <span className="cursor-default pointer-events-none opacity-60">Documentation</span>
+                <span className="cursor-default pointer-events-none opacity-60">Support</span>
               </div>
             </div>
           </footer>
@@ -208,6 +216,9 @@ function AppContent() {
             {currentView === 'verify' && (
               <VerificationPage />
             )}
+            {currentView === 'settings' && (
+              <SettingsPage />
+            )}
           </Suspense>
         </main>
       </div>
@@ -223,8 +234,8 @@ function AppContent() {
             >
               Verify Certificate
             </button>
-            <a href="#" className="hover:text-[#F3F4F6] transition-colors">Documentation</a>
-            <a href="#" className="hover:text-[#F3F4F6] transition-colors">Support</a>
+            <span className="cursor-default pointer-events-none opacity-60">Documentation</span>
+            <span className="cursor-default pointer-events-none opacity-60">Support</span>
           </div>
         </div>
       </footer>

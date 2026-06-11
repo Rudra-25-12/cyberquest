@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useAuth, calculateLevelProgress } from '../context/AuthContext';
+import { useAuth, calculateLevelProgress, getRankTitle } from '../context/AuthContext';
 import { Award, Mail, Calendar, User, Save, ShieldAlert, BadgeCheck, FileText, Download, Eye, X, Trophy, BookOpen, Lock } from 'lucide-react';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '../components/ui/HoverCard';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { Progress } from '../components/ui/Progress';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../components/ui/Tooltip';
 import { getStorageKey } from '../utils/storage';
 
@@ -170,6 +171,11 @@ function CertificateTemplate({ cert, userProfile, isExport = false }) {
 export default function ProfilePage({ onShowToast }) {
   const { user, userProfile, updateProfile } = useAuth();
   const [displayName, setDisplayName] = useState(userProfile?.displayName || '');
+
+  const getFallbackInitials = (name) => {
+    if (!name) return 'C';
+    return name.trim().charAt(0).toUpperCase();
+  };
   const [bio, setBio] = useState(userProfile?.bio || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeCert, setActiveCert] = useState(null);
@@ -431,14 +437,16 @@ export default function ProfilePage({ onShowToast }) {
             {/* Profile Header Hero (GitHub Style summary) */}
             <div className="bg-[#171A21] border border-[#1F242F] p-6 rounded-lg flex flex-col sm:flex-row items-center sm:items-start gap-6 relative">
               <div className="relative flex-shrink-0">
-                <img
-                  className="w-20 h-20 rounded-full border border-[#1F242F] object-cover bg-[#0F1115]"
-                  src={user?.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=profile'}
-                  alt="Avatar"
-                  onError={(e) => {
-                    e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=profile';
-                  }}
-                />
+                <Avatar className="w-20 h-20 border border-[#1F242F] flex-shrink-0">
+                  <AvatarImage 
+                    src={userProfile?.photoURL || user?.photoURL} 
+                    alt={displayName || userProfile?.displayName || user?.displayName || 'Avatar'} 
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="text-2xl font-bold bg-[#0F1115] text-[#3B82F6]">
+                    {getFallbackInitials(displayName || userProfile?.displayName || user?.displayName)}
+                  </AvatarFallback>
+                </Avatar>
               </div>
 
               <div className="flex-grow text-center sm:text-left flex flex-col items-center sm:items-start min-w-0">
@@ -446,7 +454,7 @@ export default function ProfilePage({ onShowToast }) {
                   {displayName || userProfile?.displayName || user?.displayName || 'Cyber Cadet'}
                 </h2>
                 <p className="text-sm font-semibold text-[#3B82F6] tracking-wide mt-1">
-                  {userProfile?.role || 'Cyber Cadet'} • Level {level}
+                  {getRankTitle(level)} • Level {level}
                 </p>
 
                 {/* GitHub style profile stat summaries */}

@@ -10,6 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from './ui/DropdownMenu';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/Avatar';
 
 /**
  * Navbar Component.
@@ -20,6 +21,11 @@ import {
 export default function Navbar({ currentView, onNavigate }) {
   const { user, userProfile, logout, isFallbackMode } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const getFallbackInitials = (name) => {
+    if (!name) return 'C';
+    return name.trim().charAt(0).toUpperCase();
+  };
 
   const handleLogout = async () => {
     try {
@@ -100,28 +106,32 @@ export default function Navbar({ currentView, onNavigate }) {
                 <button
                   className="flex items-center gap-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#171A21] focus:ring-[#3B82F6] cursor-pointer"
                 >
-                  <img
-                    className="h-8 w-8 rounded-full border border-[#1F242F] object-cover"
-                    src={user?.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback'}
-                    alt={user?.displayName || 'Avatar'}
-                    onError={(e) => {
-                      e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=avatar';
-                    }}
-                  />
+                  <Avatar className="h-8 w-8 border border-[#1F242F]">
+                    <AvatarImage 
+                      src={userProfile?.photoURL || user?.photoURL} 
+                      alt={userProfile?.displayName || user?.displayName || 'Avatar'} 
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="text-[10px] bg-[#0F1115] text-[#3B82F6]">
+                      {getFallbackInitials(userProfile?.displayName || user?.displayName)}
+                    </AvatarFallback>
+                  </Avatar>
                 </button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent className="w-[260px] mt-2" align="end">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex items-center gap-3 px-1 py-1.5 text-xs">
-                    <img
-                      className="h-9 w-9 rounded-full border border-[#1F242F] object-cover flex-shrink-0"
-                      src={user?.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback'}
-                      alt="Avatar"
-                      onError={(e) => {
-                        e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=avatar';
-                      }}
-                    />
+                    <Avatar className="h-9 w-9 border border-[#1F242F] flex-shrink-0">
+                      <AvatarImage 
+                        src={userProfile?.photoURL || user?.photoURL} 
+                        alt={userProfile?.displayName || user?.displayName || 'Avatar'} 
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="text-xs bg-[#0F1115] text-[#3B82F6]">
+                        {getFallbackInitials(userProfile?.displayName || user?.displayName)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="font-semibold text-[#F3F4F6] truncate">
                         {userProfile?.displayName || user?.displayName}
@@ -164,6 +174,16 @@ export default function Navbar({ currentView, onNavigate }) {
                 >
                   <span className="text-base select-none">📊</span>
                   <span>Dashboard</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onSelect={() => {
+                    onNavigate('settings');
+                  }}
+                  className="gap-2"
+                >
+                  <span className="text-base select-none">⚙️</span>
+                  <span>Settings</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
@@ -220,11 +240,16 @@ export default function Navbar({ currentView, onNavigate }) {
           ))}
           <div className="border-t border-[#1F242F] pt-4 mt-4 px-3 flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <img
-                className="h-10 w-10 rounded-full border border-[#1F242F] object-cover"
-                src={user?.photoURL || 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback'}
-                alt="Avatar"
-              />
+              <Avatar className="h-10 w-10 border border-[#1F242F] flex-shrink-0">
+                <AvatarImage 
+                  src={userProfile?.photoURL || user?.photoURL} 
+                  alt={userProfile?.displayName || user?.displayName || 'Avatar'} 
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-sm bg-[#0F1115] text-[#3B82F6]">
+                  {getFallbackInitials(userProfile?.displayName || user?.displayName)}
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <p className="text-sm font-semibold text-[#F3F4F6]">{userProfile?.displayName || user?.displayName}</p>
                 <p className="text-xs text-[#9CA3AF]">{user?.email}</p>

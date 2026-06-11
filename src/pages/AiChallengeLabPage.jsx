@@ -17,7 +17,11 @@ import {
   RefreshCw, 
   Play, 
   History, 
-  Brain
+  Brain,
+  Trophy,
+  Award,
+  ShieldCheck,
+  FileBadge
 } from 'lucide-react';
 
 /**
@@ -224,7 +228,9 @@ export default function AiChallengeLabPage() {
     if (!res) return;
 
     if (res.levelUp) {
-      toast.success(`🎉 Level ${res.newLevel} Reached`);
+      toast.success(`Level ${res.newLevel} Reached`, {
+        icon: <Trophy className="w-4 h-4 text-[#F59E0B]" />
+      });
     }
 
     if (res.badgesUnlocked && res.badgesUnlocked.length > 0) {
@@ -234,17 +240,23 @@ export default function AiChallengeLabPage() {
       res.badgesUnlocked.forEach((badge, index) => {
         const title = badgeTitles[badge] || badge;
         setTimeout(() => {
-          toast.success(`🏅 ${title} Unlocked`);
+          toast.success(`${title} Unlocked`, {
+            icon: <Award className="w-4 h-4 text-[#3B82F6]" />
+          });
         }, 800 * (index + 1));
       });
     }
 
     if (res.certificateEarned) {
       setTimeout(() => {
-        toast.success(`✅ Module Completed`);
+        toast.success(`Module Completed`, {
+          icon: <ShieldCheck className="w-4 h-4 text-[#22C55E]" />
+        });
       }, 1000);
       setTimeout(() => {
-        toast.success(`📜 Certificate Earned`);
+        toast.success(`Certificate Earned`, {
+          icon: <FileBadge className="w-4 h-4 text-[#10B981]" />
+        });
       }, 1800);
     }
   };

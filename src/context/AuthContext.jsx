@@ -14,6 +14,16 @@ const isFirebaseConfigured = !!import.meta.env.VITE_FIREBASE_API_KEY && !!auth &
 const MOCK_SESSION_KEY = 'cyberquest_mock_session';
 
 /**
+ * Maps user levels to ranks.
+ */
+export const getRankTitle = (level) => {
+  if (level >= 15) return 'Cyber Guardian';
+  if (level >= 10) return 'Threat Hunter';
+  if (level >= 5) return 'Security Analyst';
+  return 'Cyber Cadet';
+};
+
+/**
  * Calculates level boundaries and current level progress from total XP.
  */
 export const calculateLevelProgress = (xp) => {
