@@ -103,13 +103,13 @@ export default function VerificationPage() {
               onChange={(e) => setCertId(e.target.value)}
               placeholder="Enter Certificate ID (e.g., CQ-SF-2026-1234)"
               disabled={loading}
-              className="w-full bg-[#0F1115] border border-[#1F242F] rounded-md pl-10 pr-4 py-2.5 text-sm text-[#F3F4F6] placeholder-[#6B7280] focus:outline-none focus:border-[#3B82F6] transition-colors disabled:opacity-60"
+              className="w-full bg-[#0F1115] border border-[#1F242F] rounded-md pl-10 pr-4 py-3 h-11 sm:h-auto sm:py-2.5 text-sm text-[#F3F4F6] placeholder-[#6B7280] focus:outline-none focus:border-[#3B82F6] transition-colors disabled:opacity-60"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#3B82F6] hover:bg-[#2563EB] disabled:bg-[#3B82F6]/50 text-white font-semibold text-sm px-6 py-2.5 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed min-w-[120px]"
+            className="bg-[#3B82F6] hover:bg-[#2563EB] disabled:bg-[#3B82F6]/50 text-white font-semibold text-sm px-6 py-3 h-11 sm:h-auto sm:py-2.5 rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed min-w-[120px]"
           >
             {loading ? (
               <>
@@ -186,7 +186,7 @@ export default function VerificationPage() {
               <div className="border-t border-[#1F242F]/60 pt-5 flex justify-end">
                 <button
                   onClick={handleCopyLink}
-                  className="inline-flex items-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-4 py-2 rounded-md text-xs font-semibold transition-all cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-4 py-3 h-11 sm:h-auto rounded-md text-xs font-semibold transition-all cursor-pointer"
                 >
                   {copied ? (
                     <>

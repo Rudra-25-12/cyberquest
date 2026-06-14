@@ -82,7 +82,7 @@ function CertificateTemplate({ cert, userProfile, isExport = false }) {
   return (
     <div 
       className={`relative w-full bg-[#171A21] border border-[#1F242F] rounded-lg flex flex-col items-center justify-between text-center overflow-hidden font-sans select-none
-        ${isExport ? 'p-12 h-full' : 'p-6 sm:p-8 aspect-[4/3] max-h-[50vh] sm:max-h-[55vh] md:max-h-[60vh]'}`}
+        ${isExport ? 'p-12 h-full' : 'p-4 sm:p-8 aspect-auto sm:aspect-[4/3] min-h-[385px] sm:min-h-0 max-h-[60vh] gap-3 sm:gap-4'}`}
       style={isExport ? { width: '1200px', height: '900px' } : {}}
     >
       {/* Accent border frame line */}
@@ -109,8 +109,8 @@ function CertificateTemplate({ cert, userProfile, isExport = false }) {
       </div>
 
       {/* Learner Name */}
-      <div className="z-10">
-        <h2 className={`font-extrabold text-white tracking-wide uppercase ${isExport ? 'text-4xl mt-2' : 'text-xl sm:text-2xl md:text-3xl'}`}>
+      <div className="z-10 w-full">
+        <h2 className={`font-extrabold text-white tracking-wide uppercase break-words px-2 ${isExport ? 'text-4xl mt-2' : 'text-base sm:text-2xl md:text-3xl'}`}>
           {userProfile?.displayName || 'Cyber Cadet'}
         </h2>
       </div>
@@ -121,8 +121,8 @@ function CertificateTemplate({ cert, userProfile, isExport = false }) {
       </p>
 
       {/* Module Completed */}
-      <div className="z-10">
-        <h1 className={`font-bold text-[#3B82F6] uppercase tracking-tight ${isExport ? 'text-2xl' : 'text-sm sm:text-base md:text-lg'}`}>
+      <div className="z-10 w-full px-2">
+        <h1 className={`font-bold text-[#3B82F6] uppercase tracking-tight break-words ${isExport ? 'text-2xl' : 'text-xs sm:text-base md:text-lg'}`}>
           {cert.module}
         </h1>
       </div>
@@ -141,9 +141,9 @@ function CertificateTemplate({ cert, userProfile, isExport = false }) {
 
       {/* Subtle Certification Seal */}
       <div className={`flex flex-col items-center justify-center border border-[#22C55E]/30 bg-[#22C55E]/5 rounded-full select-none z-10
-        ${isExport ? 'w-24 h-24' : 'w-14 h-14 sm:w-16 sm:h-16'}`}>
-        <BadgeCheck className={`text-[#22C55E] ${isExport ? 'w-8 h-8' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
-        <span className={`font-mono font-bold tracking-wider text-[#22C55E] text-center leading-none ${isExport ? 'text-[8px] mt-1' : 'text-[6px] mt-0.5'}`}>
+        ${isExport ? 'w-24 h-24' : 'w-12 h-12 sm:w-16 sm:h-16'}`}>
+        <BadgeCheck className={`text-[#22C55E] ${isExport ? 'w-8 h-8' : 'w-4 h-4 sm:w-6 sm:h-6'}`} />
+        <span className={`font-mono font-bold tracking-wider text-[#22C55E] text-center leading-none ${isExport ? 'text-[8px] mt-1' : 'text-[5px] mt-0.5'}`}>
           CYBERQUEST<br />VERIFIED
         </span>
       </div>
@@ -449,8 +449,8 @@ export default function ProfilePage({ onShowToast }) {
                 </Avatar>
               </div>
 
-              <div className="flex-grow text-center sm:text-left flex flex-col items-center sm:items-start min-w-0">
-                <h2 className="text-3xl font-black text-[#F3F4F6] tracking-tight">
+              <div className="flex-grow text-center sm:text-left flex flex-col items-center sm:items-start min-w-0 w-full">
+                <h2 className="text-2xl sm:text-3xl font-black text-[#F3F4F6] tracking-tight break-words w-full">
                   {displayName || userProfile?.displayName || user?.displayName || 'Cyber Cadet'}
                 </h2>
                 <p className="text-sm font-semibold text-[#3B82F6] tracking-wide mt-1">
@@ -484,11 +484,11 @@ export default function ProfilePage({ onShowToast }) {
                   "{bio || userProfile?.bio || 'No biography details provided yet.'}"
                 </p>
 
-                <div className="flex flex-wrap justify-center sm:justify-start gap-4 mt-3 text-[10px] text-[#6B7280] font-mono w-full">
-                  <span className="flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5" /> {user?.email}
+                <div className="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-2 mt-3 text-[10px] text-[#6B7280] font-mono w-full min-w-0">
+                  <span className="flex items-center gap-1 break-all max-w-full">
+                    <Mail className="w-3.5 h-3.5 flex-shrink-0" /> {user?.email}
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 flex-shrink-0">
                     <Calendar className="w-3.5 h-3.5" /> Joined {formatDate(userProfile?.createdAt)}
                   </span>
                 </div>
@@ -888,13 +888,13 @@ export default function ProfilePage({ onShowToast }) {
               <div className="flex flex-col sm:flex-row gap-3 w-full flex-shrink-0 mt-2">
                 <button
                   onClick={() => triggerExport(activeCert, 'png')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer border border-[#3B82F6]/10"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-4 py-3 h-11 sm:h-auto rounded-md text-sm font-semibold transition-all cursor-pointer border border-[#3B82F6]/10"
                 >
                   <Download className="w-4 h-4" /> Download PNG
                 </button>
                 <button
                   onClick={() => triggerExport(activeCert, 'pdf')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer border border-[#1F242F]"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] px-4 py-3 h-11 sm:h-auto rounded-md text-sm font-semibold transition-all cursor-pointer border border-[#1F242F]"
                 >
                   <Download className="w-4 h-4" /> Download PDF
                 </button>
@@ -904,7 +904,7 @@ export default function ProfilePage({ onShowToast }) {
                     window.history.pushState(null, '', `/verify?id=${activeCert.id}`);
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#171A21] hover:bg-[#242936] text-[#22C55E] px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer border border-[#22C55E]/20"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#171A21] hover:bg-[#242936] text-[#22C55E] px-4 py-3 h-11 sm:h-auto rounded-md text-sm font-semibold transition-all cursor-pointer border border-[#22C55E]/20"
                 >
                   <BadgeCheck className="w-4 h-4" /> Verify Certificate
                 </button>

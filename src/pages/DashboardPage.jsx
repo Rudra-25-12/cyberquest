@@ -407,7 +407,7 @@ export default function DashboardPage({ onNavigate }) {
         
         {/* Welcome Header */}
         <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#1F242F] pb-5">
-          <div>
+          <div className="w-full md:w-auto">
             <h1 className="text-2xl font-extrabold text-[#F3F4F6] tracking-tight">
               Security Dashboard
             </h1>
@@ -417,7 +417,7 @@ export default function DashboardPage({ onNavigate }) {
           </div>
           <button
             onClick={() => onNavigate('profile')}
-            className="text-xs font-semibold px-3 py-1.5 rounded-md border border-[#1F242F] hover:border-[#3B82F6]/30 bg-[#171A21] text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer"
+            className="w-full md:w-auto text-center justify-center inline-flex items-center text-xs font-semibold px-4 py-2.5 h-11 md:h-auto rounded-md border border-[#1F242F] hover:border-[#3B82F6]/30 bg-[#171A21] text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer"
           >
             View Profile & Achievements
           </button>
@@ -469,7 +469,7 @@ export default function DashboardPage({ onNavigate }) {
                 <div className="flex justify-between items-end text-xs font-mono">
                   <span className="text-[#9CA3AF]">Progress Tracker</span>
                   <span className="text-[#3B82F6] font-bold">
-                    {recDetails.percentage}% Completed
+                    {recDetails.percent}% Completed
                   </span>
                 </div>
                 <Progress value={recDetails.percent} className="h-2.5" />
@@ -479,7 +479,7 @@ export default function DashboardPage({ onNavigate }) {
                 <button
                   onClick={() => !recDetails.disabled && onNavigate(recDetails.path)}
                   disabled={recDetails.disabled}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 h-11 sm:h-auto rounded text-xs font-bold transition-all cursor-pointer ${
                     recDetails.disabled
                       ? 'bg-[#0F1115] text-[#6B7280] border border-[#1F242F] cursor-not-allowed'
                       : 'bg-[#3B82F6] hover:bg-[#2563EB] text-white'
@@ -606,7 +606,7 @@ export default function DashboardPage({ onNavigate }) {
 
                     <button
                       onClick={() => onNavigate(mod.path)}
-                      className="w-full text-center py-2 text-xs font-semibold rounded bg-[#0F1115] hover:bg-[#1E2330] border border-[#1F242F] hover:border-[#3B82F6]/30 text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer mt-1"
+                      className="w-full text-center py-3 sm:py-2 h-11 sm:h-auto flex items-center justify-center text-xs font-semibold rounded bg-[#0F1115] hover:bg-[#1E2330] border border-[#1F242F] hover:border-[#3B82F6]/30 text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer mt-1"
                     >
                       {mod.actionText}
                     </button>
@@ -743,7 +743,7 @@ export default function DashboardPage({ onNavigate }) {
                 {remainingBadgesCount > 0 && (
                   <button
                     onClick={() => onNavigate('profile')}
-                    className="w-full text-center py-2 bg-[#0F1115]/20 hover:bg-[#0F1115]/50 border border-[#1F242F] rounded text-[10px] font-mono text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer"
+                    className="w-full text-center py-3 sm:py-2 h-11 sm:h-auto flex items-center justify-center bg-[#0F1115]/20 hover:bg-[#0F1115]/50 border border-[#1F242F] rounded text-[10px] font-mono text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors cursor-pointer"
                   >
                     + {remainingBadgesCount} More Achievements
                   </button>

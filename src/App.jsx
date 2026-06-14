@@ -136,8 +136,8 @@ function AppContent() {
   if (!user) {
     if (window.location.pathname === '/verify') {
       return (
-        <div className="min-h-screen bg-[#0F1115] text-[#F3F4F6] flex flex-col justify-between selection:bg-[#3B82F6]/30 selection:text-white">
-          <div>
+        <div className="min-h-screen bg-[#0F1115] text-[#F3F4F6] flex flex-col justify-between selection:bg-[#3B82F6]/30 selection:text-white overflow-x-hidden w-full max-w-full">
+          <div className="w-full max-w-full">
             <header className="border-b border-[#1F242F] bg-[#171A21]/80 backdrop-blur-sm sticky top-0 z-40">
               <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                 <a href="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
@@ -186,14 +186,14 @@ function AppContent() {
 
   // 3. Authenticated State: Main Layout with Navigation
   return (
-    <div className="min-h-screen bg-[#0F1115] text-[#F3F4F6] flex flex-col justify-between selection:bg-[#3B82F6]/30 selection:text-white">
-      <div>
+    <div className="min-h-screen bg-[#0F1115] text-[#F3F4F6] flex flex-col justify-between selection:bg-[#3B82F6]/30 selection:text-white overflow-x-hidden w-full max-w-full">
+      <div className="w-full max-w-full">
         <Navbar 
           currentView={currentView} 
           onNavigate={handleNavigate} 
         />
         
-        <main className="pb-12">
+        <main className="pb-12 w-full max-w-full overflow-x-hidden">
           <Suspense fallback={<ModuleLoader />}>
             {currentView === 'dashboard' && (
               <DashboardPage onNavigate={handleNavigate} />

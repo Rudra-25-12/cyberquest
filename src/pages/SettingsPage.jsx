@@ -340,7 +340,7 @@ export default function SettingsPage() {
       }}
       className="flex items-center justify-between p-4 bg-[#0F1115] border border-[#1F242F] hover:border-[#3B82F6]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#171A21] rounded-lg cursor-pointer transition-all duration-200 group select-none outline-none"
     >
-      <div className="flex flex-col gap-0.5 max-w-[80%]">
+      <div className="flex flex-col gap-0.5 max-w-[72%] sm:max-w-[80%]">
         <span className="text-sm font-semibold text-[#F3F4F6] group-hover:text-white transition-colors">{label}</span>
         <span className="text-xs text-[#9CA3AF] leading-relaxed">{description}</span>
       </div>
@@ -367,11 +367,11 @@ export default function SettingsPage() {
       <Tabs defaultValue="account" className="w-full">
         
         {/* Tabs navigation */}
-        <TabsList className="w-full sm:w-auto grid grid-cols-4 max-w-xl mb-8">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
-          <TabsTrigger value="data">Data Management</TabsTrigger>
-          <TabsTrigger value="about">About</TabsTrigger>
+        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:grid-cols-4 h-auto sm:h-10 p-1 gap-1.5 sm:gap-0 max-w-xl mb-8">
+          <TabsTrigger value="account" className="h-10 sm:h-auto">Account</TabsTrigger>
+          <TabsTrigger value="preferences" className="h-10 sm:h-auto">Preferences</TabsTrigger>
+          <TabsTrigger value="data" className="h-10 sm:h-auto">Data Management</TabsTrigger>
+          <TabsTrigger value="about" className="h-10 sm:h-auto">About</TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Account Tab */}
@@ -399,7 +399,7 @@ export default function SettingsPage() {
                     </p>
                   </div>
                   
-                  <label className="inline-flex items-center gap-1.5 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer">
+                  <label className="inline-flex items-center justify-center gap-1.5 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-4 py-2.5 h-11 sm:h-auto sm:px-3 sm:py-1.5 rounded text-xs font-semibold transition-all cursor-pointer">
                     <FileUp className="w-3.5 h-3.5 text-[#3B82F6]" /> Change Photo
                     <input
                       type="file"
@@ -440,11 +440,11 @@ export default function SettingsPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-[#1F242F]/60 pt-4 mt-2">
-                <div className="flex items-center gap-3 text-xs text-[#9CA3AF] font-mono">
+                <div className="flex items-center gap-3 text-xs text-[#9CA3AF] font-mono min-w-0">
                   <Mail className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <span className="text-[#6B7280] block text-[9px] uppercase tracking-wider font-bold">Email Address</span>
-                    <span className="text-[#F3F4F6] font-semibold">{user?.email}</span>
+                    <span className="text-[#F3F4F6] font-semibold break-all">{user?.email}</span>
                   </div>
                 </div>
 
@@ -461,7 +461,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex items-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-4 py-2 rounded text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white px-4 py-3 h-11 sm:h-auto rounded text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? 'Saving...' : 'Save Changes'}
@@ -523,10 +523,10 @@ export default function SettingsPage() {
                     Download profile data, completed answers, earned badges, and certificates as a JSON file.
                   </p>
                 </div>
-                <button
+                 <button
                   type="button"
                   onClick={handleExportData}
-                  className="inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-3.5 py-2 rounded text-xs font-semibold transition-all cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-3.5 py-3 h-11 rounded text-xs font-semibold transition-all cursor-pointer"
                 >
                   <FileDown className="w-4 h-4" /> Export User Data
                 </button>
@@ -540,7 +540,7 @@ export default function SettingsPage() {
                     Upload a previously exported JSON backup file to restore your entire progress history.
                   </p>
                 </div>
-                <label className="inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-3.5 py-2 rounded text-xs font-semibold transition-all cursor-pointer text-center">
+                <label className="w-full inline-flex items-center justify-center gap-2 bg-[#0F1115] hover:bg-[#1F242F] text-[#F3F4F6] border border-[#1F242F] hover:border-[#3B82F6]/30 px-3.5 py-3 h-11 rounded text-xs font-semibold transition-all cursor-pointer text-center">
                   <FileUp className="w-4 h-4" /> Import User Data
                   <input
                     type="file"
@@ -563,7 +563,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setResetDialogOpen(true)}
-                className="inline-flex items-center gap-2 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/25 hover:border-[#EF4444]/40 text-[#EF4444] px-4 py-2.5 rounded text-xs font-semibold transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/25 hover:border-[#EF4444]/40 text-[#EF4444] px-4 py-3 h-11 sm:h-auto rounded text-xs font-semibold transition-all cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" /> Reset Progress
               </button>
